@@ -1,0 +1,21 @@
+{
+	"geode": "3.9.0",
+	"gd": {
+		"win": "2.206",
+		"android": "2.206",
+		"mac": "2.206",
+		"ios": "2.206"
+	},
+	"id": "km7dev.betterquests",
+	"name": "BetterQuests",
+	"version": "v1.0.0",
+	"developer": "km7dev",
+	"description": "",
+	"dependencies": [
+		{
+			"id": "fig.authentication",
+			"importance": "required",
+			"version": "1.0.1"
+		}
+	]
+}
