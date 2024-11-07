@@ -10,6 +10,46 @@ async function checkAuth(token) {
   })).json();
 }
 
+async function login(db, token) {
+  const res = await checkAuth(token);
+  if (res == "-1")
+    return {
+      fail: true,
+      resp: new Response("401 Unauthorized", {
+        status: 401,
+        statusText: "Unauthorized",
+      })
+    };
+  let query = `SELECT * FROM Users WHERE GdId = '${res.accountID}' LIMIT 1`;
+  var { results } = await db.prepare(query).all();
+  if (results.length == 0) {
+    if (!config.openForSignups) return {
+      fail: true,
+      resp: new Response("403 Forbidden", {
+        status: 403,
+        statusText: "Forbidden",
+      })
+    }
+    let ins = `INSERT INTO Users (GdId, Username) VALUES ('${res.accountID}', '${res.username}');`
+    await db.prepare(ins).all();
+    results = (await db.prepare(query).all()).results;
+  }
+
+  if (results.length == 0) {
+    return {
+      fail: true,
+      resp: new Response("500 Internal Server Error", {
+      status: 500,
+      statusText: "Internal Server Error",
+    })}
+  }
+
+  return {
+    fail: false,
+    user: results[0]
+  };
+}
+
 const config = {
   openForSignups: false,
 
@@ -62,12 +102,6 @@ export default {
         });
       }
 
-      let s = "{";
-
-      url.searchParams.forEach((value, key) => {
-        s += `"${key}":"${value}"`
-      })
-      s += "}"
       if (url.pathname === "/api/admin/test") {
         let r2 = await request.clone();
         var json;
@@ -79,51 +113,110 @@ export default {
             statusText: "Bad Request",
           });
         }
-        // return new Response(await checkAuth(json.token), {
-        //   headers: {"Content-Type": "text/plain"}
-        // });
-        const res = await checkAuth(json.token);
-        if (res == "-1")
-          return new Response("401 Unauthorized", {
-            status: 401,
-            statusText: "Unauthorized",
+
+        var { fail, user, resp} = await login(env.db, json.token)
+        
+        if (fail) return resp;
+
+        return new Response(user.Administrator, {
+          headers: { "Content-Type": "text/plain" }
+        });
+      }
+
+      if (url.pathname === "/api/admin/addquest") {
+        let r2 = await request.clone();
+        var json;
+        try {
+          json = await r2.json();
+        } catch (e) {
+          return new Response("400 Bad Request", {
+            status: 400,
+            statusText: "Bad Request",
           });
-        let query = `SELECT * FROM Users WHERE GdId = '${res.accountID}' LIMIT 1`;
-        var { results } = await env.db.prepare(query).all();
-        if (results.length == 0) {
-          if (!config.openForSignups) return new Response("403 Forbidden", {
+        }
+
+        var { fail, user, resp} = await login(env.db, json.token)
+        
+        if (fail) return resp;
+
+        if (user.Administrator <= 0) {
+          return new Response("403 Forbidden", {
             status: 403,
             statusText: "Forbidden",
           })
-          let ins = `INSERT INTO Users (GdId, Username) VALUES ('${res.accountID}', '${res.username}');`
-          await env.db.prepare(ins).all();
-          results = (await env.db.prepare(query).all()).results;
         }
 
-        if(results.length == 0) {
-          return new Response("500 Internal Server Error", {
-            status: 500,
-            statusText: "Internal Server Error",
+        var missing = []
+        if (json.name == null) missing.push("name");
+        if (json.diff == null) missing.push("diff");
+        if (json.reward == null) missing.push("reward");
+        if (json.type == null) missing.push("type");
+        if (json.specs == null) missing.push("specs");
+
+        if (missing.length > 0)
+          return new Response(`{"error": "Missing components!","components": ${JSON.stringify(missing)}}`, {
+            headers: { "Content-Type": "application/json" }
+          });
+        
+        let ins = `INSERT INTO Quests (QuestName, Difficulty, Reward, QuestType, Specifiers) VALUES ('${json.name}', '${json.diff}', '${json.reward}', '${json.type}', '${json.specs}');`
+        var res = await env.db.prepare(ins).all();
+        return new Response(`{"success": "${res.success}", "id": "${res.meta.last_row_id}"}`, {
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      if (url.pathname === "/api/admin/addlevel") {
+        let r2 = await request.clone();
+        var json;
+        try {
+          json = await r2.json();
+        } catch (e) {
+          return new Response("400 Bad Request", {
+            status: 400,
+            statusText: "Bad Request",
+          });
+        }
+
+        var { fail, user, resp} = await login(env.db, json.token)
+        
+        if (fail) return resp;
+
+        if (user.Administrator <= 0) {
+          return new Response("403 Forbidden", {
+            status: 403,
+            statusText: "Forbidden",
           })
         }
 
-        return new Response(results[0].Administrator, {
-          headers: { "Content-Type": "text/plain" }
-         });
+        var missing = []
+        if (json.name == null) missing.push("name");
+        if (json.id == null) missing.push("id");
+        if (json.diff == null) missing.push("diff");
+
+        if (missing.length > 0)
+          return new Response(`{"error": "Missing components!","components": ${JSON.stringify(missing)}}`, {
+            headers: { "Content-Type": "application/json" }
+          });
+        
+        let ins = `INSERT INTO Levels (LevelName, LevelId, Difficulty) VALUES ('${json.name}', '${json.id}', '${json.diff}');`
+        var res = await env.db.prepare(ins).all();
+        return new Response(`{"success": "${res.success}", "id": "${res.meta.last_row_id}"}`, {
+          headers: { "Content-Type": "application/json" }
+        });
       }
-
-      // TODO: admin crap
-
-      // TODO: leaderboard
+      
+      // TODO: Removing quests/levels
+      // TODO: Proper banning support
+      // TODO: Leaderboard
 
       return new Response("404 Not Found", {
         status: 404,
         statusText: "Not Found",
       });
     } catch (e) {
-      return new Response(`Internal error occured! ${e}`, {
+      return new Response(`500 Internal Server Error: ${e}`, {
         status: 500,
-        statusText: "Not Found",
+        statusText: "Internal Server Error",
       });
     }
   },
