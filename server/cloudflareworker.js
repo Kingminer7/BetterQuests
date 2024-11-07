@@ -15,9 +15,8 @@ async function login(db, token) {
   if (res == "-1")
     return {
       fail: true,
-      resp: new Response("401 Unauthorized", {
-        status: 401,
-        statusText: "Unauthorized",
+      resp: new Response(`{"error": {"code": "1", "reason": "Invalid account authentication."}}`, {
+        headers: { 'Content-Type': 'application/json'}
       })
     };
   let query = `SELECT * FROM Users WHERE GdId = '${res.accountID}' LIMIT 1`;
@@ -25,9 +24,8 @@ async function login(db, token) {
   if (results.length == 0) {
     if (!config.openForSignups) return {
       fail: true,
-      resp: new Response("403 Forbidden", {
-        status: 403,
-        statusText: "Forbidden",
+      resp: new Response(`{"error": {"code": "1", "reason": "Not currently accepting signups."}}`, {
+        headers: { 'Content-Type': 'application/json'}
       })
     }
     let ins = `INSERT INTO Users (GdId, Username) VALUES ('${res.accountID}', '${res.username}');`
@@ -39,20 +37,22 @@ async function login(db, token) {
     return {
       fail: true,
       resp: new Response("500 Internal Server Error", {
-      status: 500,
-      statusText: "Internal Server Error",
-    })}
+        status: 500,
+        statusText: "Internal Server Error",
+      })
+    }
   }
 
   return {
     fail: false,
-    user: results[0]
+    user: results[0],
   };
 }
 
 const config = {
   openForSignups: false,
-
+  pageSize: 10,
+  startDate: 20034,
 }
 
 export default {
@@ -62,26 +62,7 @@ export default {
 
       const pathSegments = url.pathname.split('/').filter(segment => segment !== '');
 
-      if (url.pathname === "/api/all") {
-        const type = pathSegments.slice(2)[0];
-        var seed = Math.floor(Math.floor(Date.now() / 1000) / (60 * 60 * 24));
-        seed *= env.secretnumberlol
-        var hash = 0, len = 3;
-        for (var i = 0; i < len; i++) {
-          hash = ((hash << 5) - hash) + "all".charCodeAt(i);
-          hash |= 0;
-        }
-        seed += hash;
-
-        let query = `SELECT * FROM Quests ORDER BY SIN(sqlid + ${seed}) LIMIT 3`;
-
-        const { results } = await env.db.prepare(query).all();
-        return new Response(JSON.stringify(results), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-
-      // Getting daily quests
+      // Quest getting endpoints
 
       if (pathSegments.length == 3 && pathSegments[0] === 'api' && pathSegments[1] === 'daily') {
         const type = pathSegments.slice(2)[0];
@@ -94,34 +75,28 @@ export default {
         }
         seed += hash;
 
-        let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY SIN(sqlid + ${seed})`;// LIMIT 3`;
+        let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY SIN(sqlid + ${seed}) LIMIT 3`;
 
         const { results } = await env.db.prepare(query).all();
-        return new Response(`{"day": ${day - 20032}, "quests": ${JSON.stringify(results)}}`, {
+
+        var res = await env.db.prepare(`SELECT MaximumTrophies, LastUpd${type} FROM GeneralData WHERE Id = 0`);
+        res = await res.all();
+        res = res.results[0];
+
+        if (res[`LastUpd${type}`] < day) {
+          let i = res.MaximumTrophies;
+          results.forEach(result => {
+            i += result.Reward
+          });
+          let ins = `UPDATE GeneralData SET LastUpd${type} = ${day}, MaximumTrophies = ${i};`
+          var res = await env.db.prepare(ins).all();
+        }
+        return new Response(`{"day": ${day - config.startDate}, "quests": ${JSON.stringify(results)}}`, {
           headers: { 'Content-Type': 'application/json' }
         });
       }
 
-      if (url.pathname === "/api/admin/test") {
-        let r2 = await request.clone();
-        var json;
-        try {
-          json = await r2.json();
-        } catch (e) {
-          return new Response("400 Bad Request", {
-            status: 400,
-            statusText: "Bad Request",
-          });
-        }
-
-        var { fail, user, resp} = await login(env.db, json.token)
-        
-        if (fail) return resp;
-
-        return new Response(user.Administrator, {
-          headers: { "Content-Type": "text/plain" }
-        });
-      }
+      // Administrator Endpoints
 
       if (url.pathname === "/api/admin/addquest") {
         let r2 = await request.clone();
@@ -129,20 +104,18 @@ export default {
         try {
           json = await r2.json();
         } catch (e) {
-          return new Response("400 Bad Request", {
-            status: 400,
-            statusText: "Bad Request",
+          return new Response(`{"error": {"code": "2", "reason": "Incorrect request type."}}`, {
+            headers: { 'Content-Type': 'application/json'}
           });
         }
 
-        var { fail, user, resp} = await login(env.db, json.token)
-        
+        var { fail, user, resp } = await login(env.db, json.token)
+
         if (fail) return resp;
 
         if (user.Administrator <= 0) {
-          return new Response("403 Forbidden", {
-            status: 403,
-            statusText: "Forbidden",
+          return new Response(`{"error": {"code": "1", "reason": "Incorrect administration level."}}`, {
+            headers: { 'Content-Type': 'application/json'}
           })
         }
 
@@ -157,7 +130,7 @@ export default {
           return new Response(`{"error": "Missing components!","components": ${JSON.stringify(missing)}}`, {
             headers: { "Content-Type": "application/json" }
           });
-        
+
         let ins = `INSERT INTO Quests (QuestName, Difficulty, Reward, QuestType, Specifiers) VALUES ('${json.name}', '${json.diff}', '${json.reward}', '${json.type}', '${json.specs}');`
         var res = await env.db.prepare(ins).all();
         return new Response(`{"success": "${res.success}", "id": "${res.meta.last_row_id}"}`, {
@@ -171,20 +144,18 @@ export default {
         try {
           json = await r2.json();
         } catch (e) {
-          return new Response("400 Bad Request", {
-            status: 400,
-            statusText: "Bad Request",
+          return new Response(`{"error": {"code": "2", "reason": "Incorrect request type."}}`, {
+            headers: { 'Content-Type': 'application/json'}
           });
         }
 
-        var { fail, user, resp} = await login(env.db, json.token)
-        
+        var { fail, user, resp } = await login(env.db, json.token)
+
         if (fail) return resp;
 
         if (user.Administrator <= 0) {
-          return new Response("403 Forbidden", {
-            status: 403,
-            statusText: "Forbidden",
+          return new Response(`{"error": {"code": "1", "reason": "Incorrect administration level."}}`, {
+            headers: { 'Content-Type': 'application/json'}
           })
         }
 
@@ -197,14 +168,88 @@ export default {
           return new Response(`{"error": "Missing components!","components": ${JSON.stringify(missing)}}`, {
             headers: { "Content-Type": "application/json" }
           });
-        
+
         let ins = `INSERT INTO Levels (LevelName, LevelId, Difficulty) VALUES ('${json.name}', '${json.id}', '${json.diff}');`
         var res = await env.db.prepare(ins).all();
         return new Response(`{"success": "${res.success}", "id": "${res.meta.last_row_id}"}`, {
           headers: { "Content-Type": "application/json" }
         });
       }
-      
+
+      // Leaderboard endpoints
+      if (url.pathname == "/api/leaderboard/get") {
+        let page = parseInt(url.searchParams.get("page")) || 1;
+        const totalCountQuery = `
+          SELECT COUNT(*) AS total_count 
+          FROM Users 
+          WHERE Banned = 0
+        `;
+
+        const totalCount = (await env.db.prepare(totalCountQuery).all()).results[0].total_count;
+
+        const totalPages = Math.ceil(totalCount / config.pageSize);
+
+        if (page > totalPages || 0 >= page)
+          return new Response(`{"total_pages": ${totalPages}}`, {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        let query = `SELECT * FROM Users WHERE Banned = 0 ORDER BY Trophies LIMIT 10`;
+        const { results } = await env.db.prepare(query).all();
+
+        let sentList = []
+        results.forEach((result) => {
+          sentList.push({ id: result.GdId, name: result.Username, trophies: result.Trophies })
+        })
+
+        return new Response(`{"total_pages": ${totalPages}, "list": ${JSON.stringify(sentList)}}`, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (url.pathname == "/api/leaderboard/update") {
+        let r2 = await request.clone();
+        var json;
+        try {
+          json = await r2.json();
+        } catch (e) {
+          return new Response(`{"error": {"code": "2", "reason": "Incorrect request level."}}`, {
+            headers: { 'Content-Type': 'application/json'}
+          })
+        }
+
+        var { fail, user, resp } = await login(env.db, json.token)
+
+        if (fail) return resp;
+
+
+        let page = parseInt(url.searchParams.get("page")) || 1;
+        const totalCountQuery = `
+          SELECT COUNT(*) AS total_count 
+          FROM Users 
+          WHERE Banned = 0
+        `;
+
+        const totalCount = (await env.db.prepare(totalCountQuery).all()).results[0].total_count;
+
+        const totalPages = Math.ceil(totalCount / config.pageSize);
+
+        if (page > totalPages || 0 >= page)
+          return new Response(`{"total_pages": ${totalPages}}`, {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        let query = `SELECT * FROM Users WHERE Banned = 0 ORDER BY Trophies LIMIT 10`;
+        const { results } = await env.db.prepare(query).all();
+
+        let sentList = []
+        results.forEach((result) => {
+          sentList.push({ id: result.GdId, name: result.Username, trophies: result.Trophies })
+        })
+
+        return new Response(`{"total_pages": ${totalPages}, "list": ${JSON.stringify(sentList)}}`, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
       // TODO: Removing quests/levels
       // TODO: Proper banning support
       // TODO: Leaderboard
