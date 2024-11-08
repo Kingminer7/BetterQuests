@@ -135,7 +135,7 @@ export default {
           );
         }
 
-        var { fail, user, resp } = await login(env.db, json.token);
+        var { user, resp } = await login(env.db, json.token);
 
         if (fail) return resp;
 
