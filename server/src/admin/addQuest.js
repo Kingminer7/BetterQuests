@@ -1,7 +1,7 @@
 import auth from '../util/auth';
 
 const module = {
-	name: 'Admin:404',
+	name: 'Admin:AddQuest',
 	config: {
 		minPerm: 1,
 	},
@@ -16,7 +16,7 @@ const module = {
 			});
 		}
 
-		var { user, response } = await auth.login(env.db, json.token);
+		var { user, resp } = await auth.login(env.db, json.token);
 		if (resp) return resp;
 
 		if (user.Administrator <= this.config.minPerm) {
