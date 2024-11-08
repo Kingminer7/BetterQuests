@@ -37,6 +37,15 @@ const module = {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    let ins = `INSERT INTO Quests (QuestName, Difficulty, Reward, QuestType, Specifiers) VALUES ('${json.name}', '${json.diff}', '${json.reward}', '${json.type}', '${json.specs}');`;
+    var res = await env.db.prepare(ins).all();
+    return new Response(
+      `{"id": "${res.meta.last_row_id}"}`,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 	},
 };
 
