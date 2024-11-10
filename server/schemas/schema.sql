@@ -2,6 +2,7 @@
 -- DROP TABLE IF EXISTS Roles;
 -- DROP TABLE IF EXISTS Users;
 -- DROP TABLE IF EXISTS GeneralData;
+-- DROP TABLE IF EXISTS Levels;
 
 CREATE TABLE
 	IF NOT EXISTS Quests (
@@ -12,6 +13,14 @@ CREATE TABLE
 		Difficulty TEXT DEFAULT 'None',
 		Type TEXT DEFAULT 'None',
 		Specifications JSON DEFAULT '{}'
+	);
+
+CREATE TABLE
+	IF NOT EXISTS Levels (
+		Id INTEGER PRIMARY KEY AUTOINCREMENT,
+		Name TEXT DEFAULT 'Unknown',
+		LevelId INTEGER DEFAULT 0,
+		Difficulty TEXT DEFAULT 'None'
 	);
 
 CREATE TABLE
@@ -82,7 +91,7 @@ VALUES
 		'Test Quest',
 		"Quest for Testing",
 		2,
-		'Easy',
+		'Test',
 		'Test',
 		'{"test": "true"}'
 	);

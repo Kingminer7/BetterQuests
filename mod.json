@@ -16,6 +16,11 @@
 			"id": "fig.authentication",
 			"importance": "required",
 			"version": "1.0.1"
+		},
+		{
+			"id": "geode.node-ids",
+			"importance": "required",
+			"version": "1.16.0"
 		}
 	]
 }
