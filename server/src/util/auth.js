@@ -1,3 +1,5 @@
+import config from '../config';
+
 async function checkAuth(token) {
   const params = new URLSearchParams();
   params.append('sessionID', token);
@@ -29,7 +31,7 @@ async function login(db, token) {
           headers: { 'Content-Type': 'application/json' },
         }),
       };
-    let ins = `INSERT INTO Users (GdId, Username) VALUES ('${res.accountID}', '${res.username}');`;
+    let ins = `INSERT INTO Users (GdId, Name) VALUES ('${res.accountID}', '${res.username}');`;
     await db.prepare(ins).all();
     results = (await db.prepare(query).all()).results;
   }

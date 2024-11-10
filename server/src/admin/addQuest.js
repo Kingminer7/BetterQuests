@@ -6,7 +6,7 @@ const module = {
 		minPerm: 1,
 	},
 	execute: async function (request, env, ctx) {
-		if (request.url_.pathname !== '/api/admin/addquest') return;
+		if (request.url_.pathname !== '/admin/addquest') return;
 		var json;
 		try {
 			json = await (await request.clone()).json();
@@ -27,8 +27,9 @@ const module = {
 
 		var missing = [];
 		if (json.name == null) missing.push('name');
-		if (json.diff == null) missing.push('diff');
+		if (json.desc == null) missing.push('desc');
 		if (json.reward == null) missing.push('reward');
+		if (json.diff == null) missing.push('diff');
 		if (json.type == null) missing.push('type');
 		if (json.specs == null) missing.push('specs');
 
@@ -38,7 +39,7 @@ const module = {
       });
     }
 
-    let ins = `INSERT INTO Quests (QuestName, Difficulty, Reward, QuestType, Specifiers) VALUES ('${json.name}', '${json.diff}', '${json.reward}', '${json.type}', '${json.specs}');`;
+    let ins = `INSERT INTO Quests (Name, Description, Reward, Difficulty, Type, Specifications) VALUES ('${json.name}', '${json.desc}', '${json.reward}', '${json.diff}', '${json.type}', '${json.specs}');`;
     var res = await env.db.prepare(ins).all();
     return new Response(
       `{"id": "${res.meta.last_row_id}"}`,

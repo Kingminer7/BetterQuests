@@ -6,7 +6,7 @@ const module = {
 		minPerm: 1,
 	},
 	execute: async function (request, env, ctx) {
-		if (request.url_.pathname !== '/api/admin/addlevel') return;
+		if (request.url_.pathname !== '/admin/addlevel') return;
 		var json;
 		try {
 			json = await (await request.clone()).json();
