@@ -13,7 +13,7 @@ protected:
 public:
     static QuestPopup* create() {
         auto ret = new QuestPopup();
-        if (ret->initAnchored(240.f, 160.f)) {
+        if (ret->initAnchored(420.f, 280.f)) {
             ret->autorelease();
             return ret;
         }
