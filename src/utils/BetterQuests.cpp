@@ -8,3 +8,7 @@ BetterQuests* BetterQuests::get() {
     }
     return instance;
 }
+
+std::string BetterQuests::getServerUrl() {
+    return this->serverUrl;
+}

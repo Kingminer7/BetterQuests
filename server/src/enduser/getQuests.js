@@ -37,7 +37,6 @@ const module = {
 			var res = await env.db.prepare(ins).all();
 		}
 		for (var i = 0; i < results.length; i++) {
-			// pick level like picked quests
 			let level = await env.db.prepare(`SELECT * FROM Levels WHERE Difficulty = '${type}' ORDER BY SIN(${seed} + Id) LIMIT 1`);
 			level = await level.all();
 			if (level.results.length === 0) {
