@@ -7,9 +7,7 @@ bool QuestNode::init(Quest quest) {
 
     this->quest = quest;
 
-    auto bg = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
-    bg->setScaleX(2.f);
-    bg->setScaleY(1.f);
+    auto bg = CCScale9Sprite::create("GJ_square02.png");
     this->addChildAtPosition(bg, geode::Anchor::Center, {0.f, 0.f});
 
     auto title = CCLabelBMFont::create(quest.name.c_str(), "bigFont.fnt");
