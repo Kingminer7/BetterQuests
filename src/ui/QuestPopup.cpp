@@ -1,44 +1,84 @@
 #include "QuestPopup.hpp"
-#include "QuestNode.hpp"
 #include "../utils/BetterQuests.hpp"
+#include "QuestNode.hpp"
 
 bool QuestPopup::setup() {
-    auto tlCorner = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
-    tlCorner->setFlipY(true);
-    tlCorner->setID("top-left-corner");
-    m_mainLayer->addChildAtPosition(tlCorner, geode::Anchor::TopLeft, {tlCorner->getContentSize().width / 2, -tlCorner->getContentSize().height / 2});
 
-    auto trCorner = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
-    trCorner->setFlipX(true);
-    trCorner->setFlipY(true);
-    trCorner->setID("top-right-corner");
-    m_mainLayer->addChildAtPosition(trCorner, geode::Anchor::TopRight, {-trCorner->getContentSize().width / 2, -trCorner->getContentSize().height / 2});
+  setID("quest-popup"_spr);
+  m_mainLayer->setID("main-layer");
 
-    auto blCorner = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
-    blCorner->setID("bottom-left-corner");
-    m_mainLayer->addChildAtPosition(blCorner, geode::Anchor::BottomLeft, {blCorner->getContentSize().width / 2, blCorner->getContentSize().height / 2});
+  auto tlCorner =
+      CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+  tlCorner->setFlipY(true);
+  tlCorner->setID("top-left-corner");
+  m_mainLayer->addChildAtPosition(tlCorner, Anchor::TopLeft,
+                                  {tlCorner->getContentSize().width / 2,
+                                   -tlCorner->getContentSize().height / 2});
 
-    auto brCorner = CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
-    brCorner->setFlipX(true);
-    brCorner->setID("bottom-right-corner");
-    m_mainLayer->addChildAtPosition(brCorner, geode::Anchor::BottomRight, {-brCorner->getContentSize().width / 2, brCorner->getContentSize().height / 2});
+  auto trCorner =
+      CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+  trCorner->setFlipX(true);
+  trCorner->setFlipY(true);
+  trCorner->setID("top-right-corner");
+  m_mainLayer->addChildAtPosition(trCorner, Anchor::TopRight,
+                                  {-trCorner->getContentSize().width / 2,
+                                   -trCorner->getContentSize().height / 2});
 
-    auto quest = Quest{0, "test", "test", 0, "test", "test", {}};
+  auto blCorner =
+      CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+  blCorner->setID("bottom-left-corner");
+  m_mainLayer->addChildAtPosition(blCorner, Anchor::BottomLeft,
+                                  {blCorner->getContentSize().width / 2,
+                                   blCorner->getContentSize().height / 2});
 
-    auto node = QuestNode::create(quest);
-    node->setID("quest-node");
-    m_mainLayer->addChildAtPosition(node, geode::Anchor::Center, {0.f, 0.f});
+  auto brCorner =
+      CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
+  brCorner->setFlipX(true);
+  brCorner->setID("bottom-right-corner");
+  m_mainLayer->addChildAtPosition(brCorner, Anchor::BottomRight,
+                                  {-brCorner->getContentSize().width / 2,
+                                   brCorner->getContentSize().height / 2});
 
-    return true;
+  auto quest = Quest{0,
+                     "The Easiest Quest In The World",
+                     "Beat Tidal Wave",
+                     0,
+                     "Easy",
+                     "BeatLevel",
+                     {}};
+
+  auto questMenu = CCMenu::create();
+  questMenu->setID("quest-menu");
+  m_mainLayer->addChildAtPosition(questMenu, Anchor::Center, {0.f, 0.f});
+
+  // auto node = QuestNode::create(quest, {360.f, 80.f});
+  // node->setID("quest-node-1");
+  // questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+
+  m_listener.bind([this, questMenu](web::WebTask::Event *e) {
+    if (web::WebResponse *res = e->getValue()) {
+      std::vector<Quest> quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
+      for (auto quest : quests) {
+        auto node = QuestNode::create(quest, {360.f, 80.f});
+        node->setID(fmt::format("quest-node-{}", quest.id));
+        questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+      }
+    }
+  });
+
+  auto req = web::WebRequest();
+  m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests?type={}", BetterQuests::get()->getServerUrl(), difficulty)));
+
+  return true;
 }
 
-QuestPopup* QuestPopup::create() {
-    auto ret = new QuestPopup();
-    if (ret->initAnchored(420.f, 280.f)) {
-        ret->autorelease();
-        return ret;
-    }
+QuestPopup *QuestPopup::create() {
+  auto ret = new QuestPopup();
+  if (ret->initAnchored(420.f, 280.f)) {
+    ret->autorelease();
+    return ret;
+  }
 
-    delete ret;
-    return nullptr;
+  delete ret;
+  return nullptr;
 }

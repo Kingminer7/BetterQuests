@@ -22,5 +22,12 @@
 			"importance": "required",
 			"version": "1.17.0"
 		}
-	]
+	],
+	"resources": {
+		"spritesheets": {
+			"BQ_questSheet01": [
+				"resources/sprites/scroll.png"
+			]
+		}
+	}
 }

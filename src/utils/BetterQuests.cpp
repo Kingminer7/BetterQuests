@@ -12,3 +12,4 @@ BetterQuests* BetterQuests::get() {
 std::string BetterQuests::getServerUrl() {
     return this->serverUrl;
 }
+
