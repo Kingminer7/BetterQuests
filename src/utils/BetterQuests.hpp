@@ -29,13 +29,13 @@ struct matjson::Serialize<Quest>
     static Result<Quest> fromJson(matjson::Value const &value)
     {
         return Ok(Quest{
-            .id = value["id"].as<int>().unwrapOrDefault(),
-            .name = value["name"].as<std::string>().unwrapOrDefault(),
-            .description = value["description"].as<std::string>().unwrapOrDefault(),
-            .reward = value["reward"].as<int>().unwrapOrDefault(),
-            .difficulty = value["difficulty"].as<std::string>().unwrapOrDefault(),
-            .type = value["type"].as<std::string>().unwrapOrDefault(),
-            .specifications = value["specifications"].as<std::unordered_map<std::string,std::string>>().unwrapOrDefault()
+            .id = value["Id"].as<int>().unwrapOrDefault(),
+            .name = value["Name"].as<std::string>().unwrapOrDefault(),
+            .description = value["Description"].as<std::string>().unwrapOrDefault(),
+            .reward = value["Reward"].as<int>().unwrapOrDefault(),
+            .difficulty = value["Difficulty"].as<std::string>().unwrapOrDefault(),
+            .type = value["Type"].as<std::string>().unwrapOrDefault(),
+            .specifications = value["Specifications"].as<std::unordered_map<std::string,std::string>>().unwrapOrDefault()
         });
     }
 

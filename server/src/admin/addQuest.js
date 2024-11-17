@@ -39,7 +39,7 @@ const module = {
       });
     }
 
-    let ins = `INSERT INTO Quests (Name, Description, Reward, Difficulty, Type, Specifications) VALUES ('${json.name}', '${json.desc}', '${json.reward}', '${json.diff}', '${json.type}', '${json.specs}');`;
+    let ins = `INSERT INTO QueuedQuests (Name, Description, Reward, Difficulty, Type, Specifications) VALUES ('${json.name}', '${json.desc}', '${json.reward}', '${json.diff}', '${json.type}', '${json.specs}');`;
     var res = await env.db.prepare(ins).all();
     return new Response(
       `{"id": "${res.meta.last_row_id}"}`,

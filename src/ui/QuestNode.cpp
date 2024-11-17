@@ -23,7 +23,7 @@ bool QuestNode::init(Quest quest, CCSize size) {
     auto desc = CCLabelBMFont::create(quest.description.c_str(), "goldFont.fnt");
     desc->setScale(0.575f);
     desc->setAnchorPoint({0,0.5});
-    desc->limitLabelWidth(340, 0.575, 0.15);
+    desc->limitLabelWidth(280, 0.575, 0.15);
     this->addChildAtPosition(desc, geode::Anchor::TopLeft, {10.f, -30.f});
 
     auto reward = CCLabelBMFont::create(fmt::format("{}x", quest.reward).c_str(), "bigFont.fnt");

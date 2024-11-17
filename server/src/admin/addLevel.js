@@ -36,7 +36,7 @@ const module = {
 			});
 		}
 
-		let ins = `INSERT INTO Levels (Name, LevelId, Difficulty) VALUES ('${json.name}', '${json.id}', '${json.diff}');`;
+		let ins = `INSERT INTO QueuedLevels (Name, LevelId, Difficulty) VALUES ('${json.name}', '${json.id}', '${json.diff}');`;
 		var res = await env.db.prepare(ins).all();
 		return new Response(`{"id": "${res.meta.last_row_id}"}`, {
 			headers: { 'Content-Type': 'application/json' },

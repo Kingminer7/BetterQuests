@@ -1,5 +1,6 @@
 #include "QuestPopup.hpp"
 #include "../utils/BetterQuests.hpp"
+#include "Geode/ui/Layout.hpp"
 #include "QuestNode.hpp"
 
 bool QuestPopup::setup() {
@@ -49,20 +50,19 @@ bool QuestPopup::setup() {
 
   auto questMenu = CCMenu::create();
   questMenu->setID("quest-menu");
+  questMenu->setLayout(AxisLayout::create(Axis::Column));
   m_mainLayer->addChildAtPosition(questMenu, Anchor::Center, {0.f, 0.f});
-
-  // auto node = QuestNode::create(quest, {360.f, 80.f});
-  // node->setID("quest-node-1");
-  // questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
 
   m_listener.bind([this, questMenu](web::WebTask::Event *e) {
     if (web::WebResponse *res = e->getValue()) {
-      std::vector<Quest> quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
+      log::info("{}", res->string().unwrapOrDefault());
+      auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
       for (auto quest : quests) {
-        auto node = QuestNode::create(quest, {360.f, 80.f});
+        auto node = QuestNode::create(quest, {360.f, 75.f});
         node->setID(fmt::format("quest-node-{}", quest.id));
         questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
       }
+      questMenu->updateLayout();
     }
   });
 
