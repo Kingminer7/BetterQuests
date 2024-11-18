@@ -59,18 +59,21 @@ const module = {
 			var res = await env.db.prepare(ins).all();
 		}
 		for (var i = 0; i < results.length; i++) {
-			let level = await env.db.prepare(`SELECT * FROM Levels WHERE Difficulty = '${type}' ORDER BY SIN(${seed} + Id) LIMIT 1`);
-			level = await level.all();
-			if (level.results.length === 0) {
-				return new Response(`{"error": {"code": "3", "reason": "No levels found."}}`, {
-					headers: { 'Content-Type': 'application/json' },
-				});
+			if (results[i].Name.includes(`{{levelname}}`) || results[i].Description.includes(`{{levelname}}`) || results[i].Specifications.includes(`{{levelname}}`)) {
+				let level = await env.db.prepare(`SELECT * FROM Levels WHERE Difficulty = '${type}' ORDER BY SIN(${seed * i} + Id) LIMIT 1`);
+				level = await level.all();
+				if (level.results.length === 0) {
+					return new Response(`{"error": {"code": "3", "reason": "No levels found."}}`, {
+						headers: { 'Content-Type': 'application/json' },
+					});
+				}
+				results[i].Name = results[i].Name.replace(`{{levelname}}`, level.results[0].Name).replace(`{{levelid}}`, level.results[0].LevelId);
+				results[i].Description = results[i].Description.replace(`{{levelname}}`, level.results[0].Name).replace(`{{levelid}}`, level.results[0].LevelId);
+				results[i].Specifications = results[i].Specifications.replace(`{{levelname}}`, level.results[0].Name).replace(`{{levelid}}`, level.results[0].LevelId);
+				if (level.results[0].QuestName !== "") results[i].Name = level.results[0].QuestName;
 			}
-			results[i].Name = results[i].Name.replace(`{{levelname}}`, level.results[0].Name).replace(`{{levelid}}`, level.results[0].LevelId);
-			results[i].Description = results[i].Description.replace(`{{levelname}}`, level.results[0].Name).replace(`{{levelid}}`, level.results[0].LevelId);
-			results[i].Specifications = results[i].Specifications.replace(`{{levelname}}`, level.results[0].Name).replace(`{{levelid}}`, level.results[0].LevelId);
 		}
-		return new Response(`{"day": ${day - config.startDate}, "quests": ${JSON.stringify(results)}}`, {
+		return new Response(`{"day": ${day - config.startDate}, "quests": ${JSON.stringify(results)}, "next_reset": ${Math.floor(Date.now()/1000 + 86400 - (Date.now() / 1000) % 86400)}}`, {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	},

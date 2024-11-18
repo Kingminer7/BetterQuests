@@ -1,5 +1,6 @@
 #include "QuestPopup.hpp"
 #include "../utils/BetterQuests.hpp"
+#include "Geode/binding/LoadingCircle.hpp"
 #include "Geode/ui/Layout.hpp"
 #include "QuestNode.hpp"
 
@@ -53,16 +54,38 @@ bool QuestPopup::setup() {
   questMenu->setLayout(AxisLayout::create(Axis::Column));
   m_mainLayer->addChildAtPosition(questMenu, Anchor::Center, {0.f, 0.f});
 
-  m_listener.bind([this, questMenu](web::WebTask::Event *e) {
+  auto now = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::system_clock::now().time_since_epoch()).count();
+
+  if (BetterQuests::get()->quests.size() > 0 && BetterQuests::get()->resetsAt > now) {
+    for (auto quest : BetterQuests::get()->quests) {
+      auto node = QuestNode::create(quest, {360.f, 75.f});
+      node->setID(fmt::format("quest-node-{}", quest.id));
+      questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+    }
+    questMenu->updateLayout();
+    return true;
+  }
+
+  auto loadingCircle = LoadingCircle::create();
+  loadingCircle->setID("loading-circle");
+  loadingCircle->setParentLayer(this);
+  loadingCircle->setPosition({0, 0});
+  loadingCircle->setScale(1.f);
+  loadingCircle->show();
+
+  m_listener.bind([this, questMenu, loadingCircle](web::WebTask::Event *e) {
     if (web::WebResponse *res = e->getValue()) {
       log::info("{}", res->string().unwrapOrDefault());
       auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
+      BetterQuests::get()->quests = quests;
+      BetterQuests::get()->resetsAt = res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault();
       for (auto quest : quests) {
         auto node = QuestNode::create(quest, {360.f, 75.f});
         node->setID(fmt::format("quest-node-{}", quest.id));
         questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
       }
       questMenu->updateLayout();
+      loadingCircle->fadeAndRemove();
     }
   });
 

@@ -9,7 +9,11 @@ struct Quest {
     int reward;
     std::string difficulty;
     std::string type;
+    int quantity;
     std::unordered_map<std::string,std::string> specifications;
+
+    // stuff managed locally
+    float progress = 768;
 };
 
 class BetterQuests {
@@ -21,6 +25,7 @@ class BetterQuests {
         static BetterQuests* get();
         std::string getServerUrl();
         std::vector<Quest> quests;
+        int resetsAt;
 };
 
 template <>
@@ -35,6 +40,7 @@ struct matjson::Serialize<Quest>
             .reward = value["Reward"].as<int>().unwrapOrDefault(),
             .difficulty = value["Difficulty"].as<std::string>().unwrapOrDefault(),
             .type = value["Type"].as<std::string>().unwrapOrDefault(),
+            .quantity = value["Quantity"].as<int>().unwrapOrDefault(),
             .specifications = value["Specifications"].as<std::unordered_map<std::string,std::string>>().unwrapOrDefault()
         });
     }
@@ -42,7 +48,7 @@ struct matjson::Serialize<Quest>
     // doubt ill need this
     static matjson::Value toJson(Quest const &value)
     {
-        auto obj = matjson::makeObject({{"id", value.id}, {"name", value.name}, {"description", value.description}, {"reward", value.reward}, {"difficulty", value.difficulty}, {"type", value.type}, {"specifications", value.specifications}});
+        auto obj = matjson::makeObject({{"id", value.id}, {"name", value.name}, {"description", value.description}, {"reward", value.reward}, {"difficulty", value.difficulty}, {"type", value.type}, {"quantity", value.quantity}, {"specifications", value.specifications}});
         return obj;
     }
 };

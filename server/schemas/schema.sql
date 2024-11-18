@@ -12,6 +12,7 @@ CREATE TABLE
 		Reward INTEGER DEFAULT 0,
 		Difficulty TEXT DEFAULT 'None',
 		Type TEXT DEFAULT 'None',
+		Quantity INTEGER DEFAULT 0,
 		Specifications JSON DEFAULT '{}'
 	);
 
@@ -23,6 +24,7 @@ CREATE TABLE
 		Reward INTEGER DEFAULT 0,
 		Difficulty TEXT DEFAULT 'None',
 		Type TEXT DEFAULT 'None',
+		Quantity INTEGER DEFAULT 0,
 		Specifications JSON DEFAULT '{}'
 	);
 
@@ -30,6 +32,7 @@ CREATE TABLE
 	IF NOT EXISTS Levels (
 		Id INTEGER PRIMARY KEY AUTOINCREMENT,
 		Name TEXT DEFAULT 'Unknown',
+		QuestName TEXT DEFAULT '',
 		LevelId INTEGER DEFAULT 0,
 		Difficulty TEXT DEFAULT 'None'
 	);
@@ -38,6 +41,7 @@ CREATE TABLE
 	IF NOT EXISTS QueuedLevels (
 		Id INTEGER PRIMARY KEY AUTOINCREMENT,
 		Name TEXT DEFAULT 'Unknown',
+		QuestName TEXT DEFAULT '',
 		LevelId INTEGER DEFAULT 0,
 		Difficulty TEXT DEFAULT 'None'
 	);
@@ -104,25 +108,40 @@ INSERT INTO
 		Reward,
 		Difficulty,
 		Type,
+		Quantity,
 		Specifications
 	)
 VALUES
 	(
-		'Test Quest',
-		"Quest for Testing",
+		'Level Master!',
+		"Beat {{levelname}} (id {{levelid}}).",
 		2,
-		'Test',
-		'Test',
-		'{"test": "true"}'
+		'easy',
+		'BeatLevel',
+		1,
+		'{"id": {{levelid}}}'
+	);
+
+INSERT INTO
+	Levels (
+		Name,
+		QuestName,
+		LevelId,
+		Difficulty
+	)
+VALUES
+	(
+		'Tidal Wave',
+		'Dap Dodum Doo',
+		86407629,
+		'easy'
 	);
 
 INSERT INTO
 	GeneralData (
-		Id,
-		MaximumTrophies
+		Id
 	)
 VALUES
 	(
-		0,
 		0
 	);
