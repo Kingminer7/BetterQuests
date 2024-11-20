@@ -65,18 +65,18 @@ CREATE TABLE
 	);
 
 CREATE TABLE
-  IF NOT EXISTS Auth {
+  IF NOT EXISTS Auth (
     UserId INTEGER PRIMARY KEY,
     Token TEXT,
     Expires INTEGER
-  };
+  );
 
 CREATE TABLE
-  IF NOT EXISTS AuthRequests {
+  IF NOT EXISTS AuthRequests (
     UserId INTEGER PRIMARY KEY,
     Challenge TEXT,
     Expires INTEGER
-  };
+  );
 
 CREATE TABLE
 	IF NOT EXISTS GeneralData (

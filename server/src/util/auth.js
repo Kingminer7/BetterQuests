@@ -18,12 +18,12 @@ const module = {
       return new Response(`{"error": {"code": "2", "reason": "Invalid request."}}`, {
         headers: { 'Content-Type': 'application/json' },
       });
-    
-    var challenge = (await env.db.prepare(`SELECT * FROM Challenges WHERE Id = ?;`, id).all()).results[0];
+
+    var challenge = (await env.db.prepare(`SELECT * FROM Auth WHERE UserId = ${parseInt(id)};`).all()).results[0];
     if (challenge != null) {
       if (parseInt(challenge.Expires) < Date.now()) {
         challenge = null;
-        env.db.prepare(`DELETE FROM Challenges WHERE Id = ?;`, id).all();
+        env.db.prepare(`DELETE FROM Challenges WHERE Id = ${parseInt(id)};`).all();
       }
     }
   }
