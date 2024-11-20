@@ -65,6 +65,20 @@ CREATE TABLE
 	);
 
 CREATE TABLE
+  IF NOT EXISTS Auth {
+    UserId INTEGER PRIMARY KEY,
+    Token TEXT,
+    Expires INTEGER
+  };
+
+CREATE TABLE
+  IF NOT EXISTS AuthRequests {
+    UserId INTEGER PRIMARY KEY,
+    Challenge TEXT,
+    Expires INTEGER
+  };
+
+CREATE TABLE
 	IF NOT EXISTS GeneralData (
 		Id INTEGER PRIMARY KEY AUTOINCREMENT,
 		MaximumTrophies INTEGER DEFAULT 0,

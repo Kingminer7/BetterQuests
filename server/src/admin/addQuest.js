@@ -1,4 +1,4 @@
-import auth from '../util/auth';
+import auth from '../util/auth_old';
 
 const module = {
 	name: 'Admin:AddQuest',

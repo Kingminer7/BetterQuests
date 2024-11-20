@@ -3,7 +3,8 @@
 import addQuest from './admin/addQuest';
 import getQuests from './enduser/getQuests';
 import addLevel from './admin/addLevel';
-let modules = [addQuest, addLevel, getQuests];
+import auth from './util/auth';
+let modules = [addQuest, addLevel, getQuests, auth];
 
 export default {
 	async fetch(req, env, ctx) {

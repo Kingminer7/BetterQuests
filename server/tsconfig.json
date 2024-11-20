@@ -42,5 +42,5 @@
 		"skipLibCheck": true
 	},
 	"exclude": ["test"],
-	"include": ["worker-configuration.d.ts", "src/**/*.ts", "src/util/auth.js", "src/index.js", "src/generic/testRubRub.js", "src/config.js"]
+	"include": ["worker-configuration.d.ts", "src/**/*.ts", "src/util/auth_old.js", "src/index.js", "src/generic/testRubRub.js", "src/config.js"]
 }
