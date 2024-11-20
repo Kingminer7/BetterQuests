@@ -1,7 +1,9 @@
 #include <Geode/Geode.hpp>
-#include <fig.authentication/include/authentication.hpp>
+#include <dashauth.hpp>
+#include "../utils/BetterQuests.hpp"
 
 using namespace geode::prelude;
+using namespace dashauth;
 
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(MyMenuLayer, MenuLayer) {
@@ -29,8 +31,10 @@ class $modify(MyMenuLayer, MenuLayer) {
 	}
 
 	void onMyButton(CCObject*) {
-		authentication::AuthenticationManager::get()->getAuthenticationToken([](std::string token) {
-			log::info("{}", token);
-		});
+		 DashAuthRequest().getToken(Mod::get(), BetterQuests::get()->getAuthUrl())->except([](std::string err) {
+                    FLAlertLayer::create("DashAuth Error", "Failed to get token, view logs for reason", "OK")->show();
+                })->then([](std::string const& token) {
+                    FLAlertLayer::create("DashAuth Success", "Token: " + token, "OK")->show();
+                });
 	}
 };

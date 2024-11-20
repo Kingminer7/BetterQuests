@@ -20,10 +20,12 @@ class BetterQuests {
     private:
         static BetterQuests* instance;
         std::string serverUrl = "http://localhost:8787"; // https://betterquests.km7dev.tech/
+        std::string authUrl = "http://localhost:8787";
         BetterQuests() {};
     public:
         static BetterQuests* get();
         std::string getServerUrl();
+        std::string getAuthUrl();
         std::vector<Quest> quests;
         int resetsAt;
 };
