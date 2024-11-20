@@ -1,4 +1,4 @@
-TODO: move to dashauth or similar
+TODO: Migrate all services using auth to new system
 
 # BetterQuests
 This is where she makes a mod.
