@@ -16,3 +16,12 @@ std::string BetterQuests::getServerUrl() {
 // std::string BetterQuests::getAuthUrl() {
 //     return this->authUrl;
 // }
+
+int BetterQuests::getScrolls() {
+    return this->scrolls;
+}
+
+void BetterQuests::addScrolls(int amount) {
+    this->scrolls += amount;
+    Mod::get()->setSavedValue<int>("scrolls", scrolls);
+}

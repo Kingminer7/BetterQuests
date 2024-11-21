@@ -10,4 +10,5 @@ class QuestNode : public CCNode {
         bool init(Quest quest, CCSize size);
     public:
         static QuestNode* create(Quest quest, CCSize size);
+        void onClaim(CCObject* Sender);
 };

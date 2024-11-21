@@ -42,24 +42,27 @@ bool QuestPopup::setup() {
                                   {-brCorner->getContentSize().width / 2,
                                    brCorner->getContentSize().height / 2});
 
-  auto quest = Quest{0,
-                     "The Easiest Quest In The World",
-                     "Beat Tidal Wave",
-                     0,
-                     "Easy",
-                     "BeatLevel",
-                     {}};
-
   auto questMenu = CCMenu::create();
   questMenu->setID("quest-menu");
   questMenu->setLayout(AxisLayout::create(Axis::Column));
   m_mainLayer->addChildAtPosition(questMenu, Anchor::Center, {0.f, 0.f});
 
+  CCSprite *scrollIcon = CCSprite::createWithSpriteFrameName("scroll.png"_spr);
+  scrollIcon->setScale(1.5f);
+  scrollIcon->setID("scroll-icon");
+  m_mainLayer->addChildAtPosition(scrollIcon, Anchor::TopRight, {-15.f, -15.f});
+
+  CCLabelBMFont *scrollLabel = CCLabelBMFont::create(fmt::format("{} ", BetterQuests::get()->getScrolls()).c_str(), "bigFont.fnt");
+  scrollLabel->setScale(0.5f);
+  scrollLabel->setAnchorPoint({1, 0.5});
+  scrollLabel->setID("scroll-label");
+  m_mainLayer->addChildAtPosition(scrollLabel, Anchor::TopRight, {-25.f, -15.f});
+
   auto now = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::system_clock::now().time_since_epoch()).count();
 
   if (BetterQuests::get()->quests.size() > 0 && BetterQuests::get()->resetsAt > now) {
     for (auto quest : BetterQuests::get()->quests) {
-      auto node = QuestNode::create(quest, {360.f, 75.f});
+      auto node = QuestNode::create(quest, {360.f, 70.f});
       node->setID(fmt::format("quest-node-{}", quest.id));
       questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
     }
@@ -82,7 +85,7 @@ bool QuestPopup::setup() {
 
   auto loadingCircle = LoadingCircle::create();
   loadingCircle->setID("loading-circle");
-  loadingCircle->setParentLayer(this);
+  loadingCircle->setParentLayer(m_mainLayer);
   loadingCircle->setPosition({0, 0});
   loadingCircle->setScale(1.f);
   loadingCircle->show();
@@ -94,7 +97,7 @@ bool QuestPopup::setup() {
       BetterQuests::get()->quests = quests;
       BetterQuests::get()->resetsAt = res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault();
       for (auto quest : quests) {
-        auto node = QuestNode::create(quest, {360.f, 75.f});
+        auto node = QuestNode::create(quest, {360.f, 70.f});
         node->setID(fmt::format("quest-node-{}", quest.id));
         questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
       }
@@ -120,9 +123,9 @@ bool QuestPopup::setup() {
 void QuestPopup::updateTimer(float) {
   if (m_timerLabel == nullptr) return;
   auto now = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::system_clock::now().time_since_epoch()).count();
-  int h = (BetterQuests::get()->resetsAt - now) / 3600;
-  int m = ((BetterQuests::get()->resetsAt - now) % 3600) / 60;
-  int s = ((BetterQuests::get()->resetsAt - now) % 3600) % 60;
+  int h = clamp((BetterQuests::get()->resetsAt - now) / 3600, 0, INT_MAX);
+  int m = clamp(((BetterQuests::get()->resetsAt - now) % 3600) / 60, 0, 59);
+  int s = clamp(((BetterQuests::get()->resetsAt - now) % 3600) % 60, 0, 59);
   m_timerLabel->setString(fmt::format("New quests in {:02}:{:02}:{:02}", h, m, s).c_str());
 }
 
