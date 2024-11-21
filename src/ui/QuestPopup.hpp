@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Geode/cocos/label_nodes/CCLabelBMFont.h"
 #include <Geode/utils/web.hpp>
 #include <Geode/loader/Event.hpp>
 
@@ -10,6 +11,8 @@ protected:
     bool setup() override;
     EventListener<web::WebTask> m_listener;
     std::string difficulty = "Easy";
+    CCLabelBMFont *m_timerLabel = nullptr;
+    void updateTimer(float);
 public:
     static QuestPopup* create();
 };

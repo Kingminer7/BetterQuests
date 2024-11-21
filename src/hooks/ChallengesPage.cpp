@@ -9,10 +9,8 @@ class $modify(myChP, ChallengesPage) {
             return false;
         }
 
-        log::debug("Hello from my ChallengesPage::init hook! This layer has {} children.", this->getChildrenCount());
-
         auto myButton = CCMenuItemSpriteExtra::create(
-            CCSprite::createWithSpriteFrameName("GJ_likeBtn_001.png"),
+            CircleButtonSprite::createWithSpriteFrameName("scroll.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::SmallAlt),
             this,
             menu_selector(myChP::onQuestsPlus)
         );

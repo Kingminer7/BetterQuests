@@ -1,6 +1,7 @@
 #include "QuestPopup.hpp"
 #include "../utils/BetterQuests.hpp"
 #include "Geode/binding/LoadingCircle.hpp"
+#include "Geode/cocos/label_nodes/CCLabelBMFont.h"
 #include "Geode/ui/Layout.hpp"
 #include "QuestNode.hpp"
 
@@ -63,6 +64,19 @@ bool QuestPopup::setup() {
       questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
     }
     questMenu->updateLayout();
+
+    
+    // int h = (BetterQuests::get()->resetsAt - now) / 3600;
+    // int m = ((BetterQuests::get()->resetsAt - now) % 3600) / 60;
+    // int s = ((BetterQuests::get()->resetsAt - now) % 3600) % 60;
+
+    m_timerLabel = CCLabelBMFont::create(fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(), "goldFont.fnt");
+    m_timerLabel->setID("timer-label");
+    m_timerLabel->setScale(0.5f);
+    m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
+    QuestPopup::updateTimer(0);
+    schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
+
     return true;
   }
 
@@ -85,6 +99,14 @@ bool QuestPopup::setup() {
         questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
       }
       questMenu->updateLayout();
+      
+      m_timerLabel = CCLabelBMFont::create(fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(), "goldFont.fnt");
+      m_timerLabel->setID("timer-label");
+      m_timerLabel->setScale(0.5f);
+      m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
+      QuestPopup::updateTimer(0);
+      schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
+
       loadingCircle->fadeAndRemove();
     }
   });
@@ -93,6 +115,15 @@ bool QuestPopup::setup() {
   m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests?type={}", BetterQuests::get()->getServerUrl(), difficulty)));
 
   return true;
+}
+
+void QuestPopup::updateTimer(float) {
+  if (m_timerLabel == nullptr) return;
+  auto now = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::system_clock::now().time_since_epoch()).count();
+  int h = (BetterQuests::get()->resetsAt - now) / 3600;
+  int m = ((BetterQuests::get()->resetsAt - now) % 3600) / 60;
+  int s = ((BetterQuests::get()->resetsAt - now) % 3600) % 60;
+  m_timerLabel->setString(fmt::format("New quests in {:02}:{:02}:{:02}", h, m, s).c_str());
 }
 
 QuestPopup *QuestPopup::create() {

@@ -1,5 +1,4 @@
 #include "QuestNode.hpp"
-#include "Geode/cocos/cocoa/CCGeometry.h"
 
 bool QuestNode::init(Quest quest, CCSize size) {
     if (!CCNode::init()) {

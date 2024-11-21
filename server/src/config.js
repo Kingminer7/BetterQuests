@@ -4,5 +4,5 @@ export default {
 	startDate: 20034,
 	authReqExp: 60 * 5,
 	authTokenExp: 60 * 60 * 24 * 3,
-	gdServers: 'https://www.boomlings.com/database/',
+	authServer: 'localhost:3000/verify',
 };

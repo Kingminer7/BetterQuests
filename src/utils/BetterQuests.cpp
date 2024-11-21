@@ -13,3 +13,6 @@ std::string BetterQuests::getServerUrl() {
     return this->serverUrl;
 }
 
+// std::string BetterQuests::getAuthUrl() {
+//     return this->authUrl;
+// }
