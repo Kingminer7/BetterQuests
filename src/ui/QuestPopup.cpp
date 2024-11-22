@@ -80,7 +80,7 @@ bool QuestPopup::setup()
   loadingCircle->setScale(1.f);
   loadingCircle->show();
 
-  m_listener.bind([this](web::WebTask::Event *e)
+  m_listener.bind([this, loadingCircle](web::WebTask::Event *e)
                   {
     if (web::WebResponse *res = e->getValue()) {
       auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
@@ -131,9 +131,13 @@ void QuestPopup::updateTimer(float)
     loadingCircle->setScale(1.f);
     loadingCircle->show();
 
-    m_listener.bind([this](web::WebTask::Event *e)
+    m_listener.bind([this, loadingCircle](web::WebTask::Event *e)
                     {
       if (web::WebResponse *res = e->getValue()) {
+        if (!res->ok()) {
+          loadingCircle->fadeAndRemove();
+          return;
+        }
         auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
         BetterQuests::get()->quests = quests;
         BetterQuests::get()->resetsAt = res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault();
