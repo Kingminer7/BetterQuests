@@ -5,7 +5,8 @@
 #include "Geode/ui/Layout.hpp"
 #include "QuestNode.hpp"
 
-bool QuestPopup::setup() {
+bool QuestPopup::setup()
+{
 
   setID("quest-popup"_spr);
   m_mainLayer->setID("main-layer");
@@ -42,10 +43,10 @@ bool QuestPopup::setup() {
                                   {-brCorner->getContentSize().width / 2,
                                    brCorner->getContentSize().height / 2});
 
-  auto questMenu = CCMenu::create();
-  questMenu->setID("quest-menu");
-  questMenu->setLayout(AxisLayout::create(Axis::Column));
-  m_mainLayer->addChildAtPosition(questMenu, Anchor::Center, {0.f, 0.f});
+  m_questMenu = CCMenu::create();
+  m_questMenu->setID("quest-menu");
+  m_questMenu->setLayout(AxisLayout::create(Axis::Column));
+  m_mainLayer->addChildAtPosition(m_questMenu, Anchor::Center, {0.f, 0.f});
 
   CCSprite *scrollIcon = CCSprite::createWithSpriteFrameName("scroll.png"_spr);
   scrollIcon->setScale(1.5f);
@@ -58,27 +59,16 @@ bool QuestPopup::setup() {
   scrollLabel->setID("scroll-label");
   m_mainLayer->addChildAtPosition(scrollLabel, Anchor::TopRight, {-25.f, -15.f});
 
-  auto now = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::system_clock::now().time_since_epoch()).count();
+  auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-  if (BetterQuests::get()->quests.size() > 0 && BetterQuests::get()->resetsAt > now) {
-    for (auto quest : BetterQuests::get()->quests) {
-      auto node = QuestNode::create(quest, {360.f, 70.f});
-      node->setID(fmt::format("quest-node-{}", quest.id));
-      questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
-    }
-    questMenu->updateLayout();
-
-    
-    // int h = (BetterQuests::get()->resetsAt - now) / 3600;
-    // int m = ((BetterQuests::get()->resetsAt - now) % 3600) / 60;
-    // int s = ((BetterQuests::get()->resetsAt - now) % 3600) % 60;
-
+  if (BetterQuests::get()->quests.size() > 0 && BetterQuests::get()->resetsAt > now)
+  {
     m_timerLabel = CCLabelBMFont::create(fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(), "goldFont.fnt");
     m_timerLabel->setID("timer-label");
     m_timerLabel->setScale(0.5f);
     m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
-    QuestPopup::updateTimer(0);
-    schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
+
+    this->loadQuests(nullptr);
 
     return true;
   }
@@ -90,29 +80,20 @@ bool QuestPopup::setup() {
   loadingCircle->setScale(1.f);
   loadingCircle->show();
 
-  m_listener.bind([this, questMenu, loadingCircle](web::WebTask::Event *e) {
+  m_listener.bind([this](web::WebTask::Event *e)
+                  {
     if (web::WebResponse *res = e->getValue()) {
-      log::info("{}", res->string().unwrapOrDefault());
       auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
       BetterQuests::get()->quests = quests;
       BetterQuests::get()->resetsAt = res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault();
-      for (auto quest : quests) {
-        auto node = QuestNode::create(quest, {360.f, 70.f});
-        node->setID(fmt::format("quest-node-{}", quest.id));
-        questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
-      }
-      questMenu->updateLayout();
-      
+
       m_timerLabel = CCLabelBMFont::create(fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(), "goldFont.fnt");
       m_timerLabel->setID("timer-label");
       m_timerLabel->setScale(0.5f);
       m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
-      QuestPopup::updateTimer(0);
-      schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
 
-      loadingCircle->fadeAndRemove();
-    }
-  });
+      this->loadQuests(loadingCircle);
+    } });
 
   auto req = web::WebRequest();
   m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests?type={}", BetterQuests::get()->getServerUrl(), difficulty)));
@@ -120,18 +101,65 @@ bool QuestPopup::setup() {
   return true;
 }
 
-void QuestPopup::updateTimer(float) {
-  if (m_timerLabel == nullptr) return;
-  auto now = std::chrono::duration_cast<std::chrono::seconds>( std::chrono::system_clock::now().time_since_epoch()).count();
+void QuestPopup::loadQuests(LoadingCircle *circle)
+{
+  for (auto quest : BetterQuests::get()->quests)
+  {
+    auto node = QuestNode::create(quest, {360.f, 70.f});
+    node->setID(fmt::format("quest-node-{}", quest.id));
+    m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+  }
+  m_questMenu->updateLayout();
+
+  QuestPopup::updateTimer(0);
+  schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
+
+  circle->fadeAndRemove();
+}
+
+void QuestPopup::updateTimer(float)
+{
+  if (m_timerLabel == nullptr)
+    return;
+  auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+  if (now > BetterQuests::get()->resetsAt)
+  {
+    auto loadingCircle = LoadingCircle::create();
+    loadingCircle->setID("loading-circle");
+    loadingCircle->setParentLayer(m_mainLayer);
+    loadingCircle->setPosition({0, 0});
+    loadingCircle->setScale(1.f);
+    loadingCircle->show();
+
+    m_listener.bind([this](web::WebTask::Event *e)
+                    {
+      if (web::WebResponse *res = e->getValue()) {
+        auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
+        BetterQuests::get()->quests = quests;
+        BetterQuests::get()->resetsAt = res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault();
+
+        m_timerLabel = CCLabelBMFont::create(fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(), "goldFont.fnt");
+        m_timerLabel->setID("timer-label");
+        m_timerLabel->setScale(0.5f);
+        m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
+
+        this->loadQuests(loadingCircle);
+      } });
+
+    auto req = web::WebRequest();
+    m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests?type={}", BetterQuests::get()->getServerUrl(), difficulty)));
+  }
   int h = clamp((BetterQuests::get()->resetsAt - now) / 3600, 0, INT_MAX);
   int m = clamp(((BetterQuests::get()->resetsAt - now) % 3600) / 60, 0, 59);
   int s = clamp(((BetterQuests::get()->resetsAt - now) % 3600) % 60, 0, 59);
   m_timerLabel->setString(fmt::format("New quests in {:02}:{:02}:{:02}", h, m, s).c_str());
 }
 
-QuestPopup *QuestPopup::create() {
+QuestPopup *QuestPopup::create()
+{
   auto ret = new QuestPopup();
-  if (ret->initAnchored(420.f, 280.f)) {
+  if (ret->initAnchored(420.f, 280.f))
+  {
     ret->autorelease();
     return ret;
   }

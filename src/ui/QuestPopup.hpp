@@ -13,6 +13,8 @@ protected:
     std::string difficulty = "Easy";
     CCLabelBMFont *m_timerLabel = nullptr;
     void updateTimer(float);
+    CCMenu *m_questMenu;
 public:
     static QuestPopup* create();
+    void loadQuests(LoadingCircle *circle);
 };
