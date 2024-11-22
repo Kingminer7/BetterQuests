@@ -24,11 +24,11 @@ bool QuestNode::init(Quest quest, CCSize size) {
 
     auto desc = CCLabelBMFont::create(quest.description.c_str(), "chatFont.fnt");
     desc->setScale(0.575f);
-    desc->setAnchorPoint({0,0.5});
+    desc->setAnchorPoint({0,1});
     desc->limitLabelWidth(280, 0.575, 0.15);
     desc->setColor({ 248, 206, 116 });
     desc->setID("description-label");
-    this->addChildAtPosition(desc, Anchor::TopLeft, {10.f, -30.f});
+    this->addChildAtPosition(desc, Anchor::TopLeft, {10.f, -23.f});
 
     auto reward = CCLabelBMFont::create(fmt::format("{}x", quest.reward).c_str(), "bigFont.fnt");
     reward->setAnchorPoint({1.f, 0.5});
@@ -70,11 +70,8 @@ bool QuestNode::init(Quest quest, CCSize size) {
     claimMenu->setID("claim-menu");
     this->addChild(claimMenu);
 
-    auto rewardBtnBtnSpr = CCSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png");
-    auto rewardBtnBtn = CCMenuItemSpriteExtra::create(
-        rewardBtnBtnSpr, this, menu_selector(QuestNode::onClaim)
-    );
-    claimMenu->addChild(rewardBtnBtn);
+    auto claimBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png"), this, menu_selector(QuestNode::onClaim));
+    claimMenu->addChildAtPosition(claimBtn, Anchor::Right, {-10.f, 0.f});
 
     return true;
 }
