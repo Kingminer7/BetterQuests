@@ -34,12 +34,12 @@ bool QuestNode::init(Quest quest, CCSize size) {
     reward->setAnchorPoint({1.f, 0.5});
     reward->setScale(0.5f);
     reward->setID("reward-label");
-    this->addChildAtPosition(reward, Anchor::Right, {-32.5f, 0.f});
+    this->addChildAtPosition(reward, Anchor::Right, {-32.5f, 13.f});
 
     auto scrollIcon = CCSprite::createWithSpriteFrameName("scroll.png"_spr);
     scrollIcon->setScale(1.5f);
     scrollIcon->setID("scroll-icon");
-    this->addChildAtPosition(scrollIcon, Anchor::Right, {-20.f, 0});
+    this->addChildAtPosition(scrollIcon, Anchor::Right, {-20.f, 13});
 
     auto progBar = CCSprite::create("GJ_progressBar_001.png");
     progBar->setAnchorPoint({0,0.5});
@@ -65,13 +65,16 @@ bool QuestNode::init(Quest quest, CCSize size) {
     progBar->addChildAtPosition(progBarLabel, Anchor::Center, {0.f, 0.f});
 
     auto claimMenu = CCMenu::create();
-    claimMenu->setAnchorPoint({0,0});
+    claimMenu->setAnchorPoint({0, 0});
     claimMenu->setPosition({0,0});
     claimMenu->setID("claim-menu");
+    claimMenu->setContentSize(this->getContentSize());
     this->addChild(claimMenu);
 
     auto claimBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png"), this, menu_selector(QuestNode::onClaim));
-    claimMenu->addChildAtPosition(claimBtn, Anchor::Right, {-10.f, 0.f});
+    claimBtn->setScale(0.6f);
+    claimBtn->m_baseScale = 0.6f;
+    claimMenu->addChildAtPosition(claimBtn, Anchor::Right, {-20.f, -13.f});
 
     return true;
 }

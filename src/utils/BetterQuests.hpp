@@ -10,7 +10,7 @@ struct Quest {
     std::string difficulty;
     std::string type;
     int quantity;
-    std::unordered_map<std::string,std::string> specifications;
+    matjson::Value specifications;
 
     // stuff managed locally
     float progress = 768;
@@ -49,7 +49,7 @@ struct matjson::Serialize<Quest>
             .difficulty = value["Difficulty"].as<std::string>().unwrapOrDefault(),
             .type = value["Type"].as<std::string>().unwrapOrDefault(),
             .quantity = value["Quantity"].as<int>().unwrapOrDefault(),
-            .specifications = value["Specifications"].as<std::unordered_map<std::string,std::string>>().unwrapOrDefault()
+            .specifications = matjson::parse(value["Specifications"].asString().unwrapOrDefault()).unwrapOrDefault()
         });
     }
 
