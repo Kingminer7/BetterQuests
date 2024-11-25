@@ -79,23 +79,21 @@ void QuestPopup::loadQuests() {
   loadingCircle->setParentLayer(m_mainLayer);
   loadingCircle->setScale(1.f);
   loadingCircle->show();
+  loadingCircle->setPosition((m_mainLayer->getContentSize() - loadingCircle->getContentSize()) / 2);
 
   if (BetterQuests::get()->quests.size() > 0 &&
       BetterQuests::get()->resetsAt > now) {
 
     int id = 0;
     for (auto quest : BetterQuests::get()->quests) {
-      if (quest.difficulty == difficulty) {
-      id++;
-      auto node = QuestNode::create(quest, {360.f, 70.f});
-      node->setID(fmt::format("quest-node-{}", id));
-      m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+      if (quest.difficulty == difficulty && std::find(BetterQuests::get()->completedQuests.begin(), BetterQuests::get()->completedQuests.end(), quest.id) == BetterQuests::get()->completedQuests.end()) {
+        id++;
+        auto node = QuestNode::create(quest, {360.f, 70.f});
+        node->setID(fmt::format("quest-node-{}", id));
+        m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
       }
     }
     m_questMenu->updateLayout();
-
-    QuestPopup::updateTimer(0);
-    schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
 
     if (!m_timerLabel) {
       m_timerLabel = CCLabelBMFont::create(
@@ -106,14 +104,16 @@ void QuestPopup::loadQuests() {
       m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom,
                                       {0.f, 12.5f});
     }
+
+    QuestPopup::updateTimer(0);
+    schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
     loadingCircle->fadeAndRemove();
     return;
   }
-  
 
   m_listener.bind([this, loadingCircle](web::WebTask::Event *e) {
     if (web::WebResponse *res = e->getValue()) {
-      if (!res->ok()){
+      if (!res->ok()) {
         loadingCircle->fadeAndRemove();
         return;
       }
@@ -122,15 +122,18 @@ void QuestPopup::loadQuests() {
                         .unwrapOrDefault()["quests"]
                         .as<std::vector<Quest>>()
                         .unwrapOrDefault();
+      BetterQuests::get()->completedQuests = std::vector<int>();
       BetterQuests::get()->quests = quests;
       BetterQuests::get()->resetsAt = res->json()
                                           .unwrapOrDefault()["next_reset"]
                                           .as<int>()
                                           .unwrapOrDefault();
+      Mod::get()->setSavedValue<int>("resetsAt", BetterQuests::get()->resetsAt);
+      Mod::get()->setSavedValue<std::vector<Quest>>("quests", quests);
 
       int id = 0;
       for (auto quest : BetterQuests::get()->quests) {
-        if (quest.difficulty == difficulty) {
+        if (quest.difficulty == difficulty && std::find(BetterQuests::get()->completedQuests.begin(), BetterQuests::get()->completedQuests.end(), quest.id) == BetterQuests::get()->completedQuests.end()) {
           id++;
           auto node = QuestNode::create(quest, {360.f, 70.f});
           node->setID(fmt::format("quest-node-{}", id));
@@ -138,9 +141,6 @@ void QuestPopup::loadQuests() {
         }
       }
       m_questMenu->updateLayout();
-
-      QuestPopup::updateTimer(0);
-      schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
 
       if (!m_timerLabel) {
         m_timerLabel = CCLabelBMFont::create(
@@ -151,6 +151,8 @@ void QuestPopup::loadQuests() {
         m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom,
                                         {0.f, 12.5f});
       }
+      QuestPopup::updateTimer(0);
+      schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
       loadingCircle->fadeAndRemove();
     }
   });

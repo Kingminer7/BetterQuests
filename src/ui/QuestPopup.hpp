@@ -10,7 +10,7 @@ class QuestPopup : public geode::Popup<> {
 protected:
     bool setup() override;
     EventListener<web::WebTask> m_listener;
-    std::string difficulty = "easy";
+    std::string difficulty = "hard";
     CCLabelBMFont *m_timerLabel = nullptr;
     void updateTimer(float);
     CCMenu *m_questMenu;

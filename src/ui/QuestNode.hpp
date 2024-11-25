@@ -11,4 +11,5 @@ class QuestNode : public CCNode {
     public:
         static QuestNode* create(Quest quest, CCSize size);
         void onClaim(CCObject* Sender);
+        void exit();
 };

@@ -106,6 +106,7 @@ class $modify(PlayLayer) {
                 if (quest.progress < quest.quantity) {
                   log::info("Adding to total of {}", quest.name);
                     quest.progress++;
+                    Mod::get()->setSavedValue("quests", BetterQuests::get()->quests);
                     log::info("{} {}/{}", quest.name, quest.progress, quest.quantity);
                 }
             }

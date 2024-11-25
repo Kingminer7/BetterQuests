@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Geode/loader/Mod.hpp"
 using namespace geode::prelude;
 
 struct Quest {
@@ -30,10 +31,18 @@ public:
   std::string getServerUrl();
   // std::string getAuthUrl();
   std::vector<Quest> quests;
+  std::vector<int> completedQuests;
   int resetsAt;
 
   int getScrolls();
   void addScrolls(int amount);
+
+  void completeQuest(Quest quest) {
+    scrolls += quest.reward;
+    Mod::get()->setSavedValue<int>("scrolls", scrolls);
+    completedQuests.push_back(quest.id);
+    Mod ::get()->setSavedValue<std::vector<int>>("completedQuests", completedQuests);
+  }
 };
 
 template <> struct matjson::Serialize<Quest> {
@@ -53,15 +62,21 @@ template <> struct matjson::Serialize<Quest> {
   }
 
   static matjson::Value toJson(Quest const &value) {
-    auto obj = matjson::makeObject({{"id", value.id},
-                                    {"name", value.name},
-                                    {"description", value.description},
-                                    {"reward", value.reward},
-                                    {"difficulty", value.difficulty},
-                                    {"type", value.type},
-                                    {"quantity", value.quantity},
-                                    {"specifications", value.specifications},
-                                    {"progress", value.progress}});
+    auto obj = matjson::makeObject({{"Id", value.id},
+                                    {"Name", value.name},
+                                    {"Description", value.description},
+                                    {"Reward", value.reward},
+                                    {"Difficulty", value.difficulty},
+                                    {"Type", value.type},
+                                    {"Quantity", value.quantity},
+                                    {"Specifications", value.specifications.dump()},
+                                    {"Progress", value.progress}});
     return obj;
   }
 };
+
+$on_mod(Loaded) {
+  BetterQuests::get()->quests = Mod::get()->getSavedValue<std::vector<Quest>>("quests");
+  BetterQuests::get()->resetsAt = Mod::get()->getSavedValue<int>("resetsAt");
+  BetterQuests::get()->completedQuests = Mod::get()->getSavedValue<std::vector<int>>("completedQuests");
+}
