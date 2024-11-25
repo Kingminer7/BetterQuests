@@ -18,7 +18,7 @@ bool QuestNode::init(Quest quest, CCSize size) {
     auto title = CCLabelBMFont::create(quest.name.c_str(), "bigFont.fnt");
     title->setScale(0.65f);
     title->setAnchorPoint({0,0.5});
-    title->limitLabelWidth(340, 0.65, 0.25);
+    title->limitLabelWidth(280, 0.65, 0.25);
     title->setID("title-label");
     this->addChildAtPosition(title, Anchor::TopLeft, {10.f, -12.f});
 
@@ -71,9 +71,16 @@ bool QuestNode::init(Quest quest, CCSize size) {
     claimMenu->setContentSize(this->getContentSize());
     this->addChild(claimMenu);
 
-    auto claimBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png"), this, menu_selector(QuestNode::onClaim));
+    CCSprite *claimSpr;
+    if (quest.progress / quest.quantity >= 1) {
+        claimSpr = CCSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png");
+    } else {
+        claimSpr = CCSpriteGrayscale::createWithSpriteFrameName("GJ_rewardBtn_001.png");
+    }
+    auto claimBtn = CCMenuItemSpriteExtra::create(claimSpr, this, menu_selector(QuestNode::onClaim));
     claimBtn->setScale(0.6f);
     claimBtn->m_baseScale = 0.6f;
+    claimBtn->setEnabled(quest.progress / quest.quantity >= 1);
     claimMenu->addChildAtPosition(claimBtn, Anchor::Right, {-20.f, -13.f});
 
     return true;
@@ -93,6 +100,8 @@ QuestNode* QuestNode::create(Quest quest, CCSize size) {
 void QuestNode::onClaim(CCObject* Sender) {
     if(quest.progress >= quest.quantity) {
       BetterQuests::get()->addScrolls(quest.reward);
+      auto p = getParent();
       this->removeFromParent();
+      p->updateLayout();
     }
 }

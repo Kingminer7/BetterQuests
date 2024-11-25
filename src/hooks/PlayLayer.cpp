@@ -99,7 +99,7 @@ class $modify(PlayLayer) {
 
         for (Quest& quest : BetterQuests::get()->quests) {
             log::info("{},{}", quest.name, quest.specifications["difficulty"].asString().unwrapOrDefault());
-            if (quest.type == "CompleteLevels" 
+            if (quest.type == "BeatLevels" 
               && quest.specifications["difficulty"].asString().unwrapOrDefault() == diffToStr(diff) 
               && m_level->m_stars > 0) {
                 log::info("Completed quest part: {}", quest.name);

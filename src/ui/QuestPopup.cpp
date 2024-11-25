@@ -85,10 +85,12 @@ void QuestPopup::loadQuests() {
 
     int id = 0;
     for (auto quest : BetterQuests::get()->quests) {
+      if (quest.difficulty == difficulty) {
       id++;
       auto node = QuestNode::create(quest, {360.f, 70.f});
       node->setID(fmt::format("quest-node-{}", id));
       m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+      }
     }
     m_questMenu->updateLayout();
 
@@ -97,19 +99,24 @@ void QuestPopup::loadQuests() {
 
     if (!m_timerLabel) {
       m_timerLabel = CCLabelBMFont::create(
-        fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(),
-        "goldFont.fnt");
+          fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(),
+          "goldFont.fnt");
       m_timerLabel->setID("timer-label");
       m_timerLabel->setScale(0.5f);
-      m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
+      m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom,
+                                      {0.f, 12.5f});
     }
+    loadingCircle->fadeAndRemove();
     return;
   }
+  
 
-  m_listener.bind([this](web::WebTask::Event *e) {
+  m_listener.bind([this, loadingCircle](web::WebTask::Event *e) {
     if (web::WebResponse *res = e->getValue()) {
-      if (!res->ok())
+      if (!res->ok()){
+        loadingCircle->fadeAndRemove();
         return;
+      }
       log::info("{}", res->string().unwrapOrDefault());
       auto quests = res->json()
                         .unwrapOrDefault()["quests"]
@@ -123,13 +130,11 @@ void QuestPopup::loadQuests() {
 
       int id = 0;
       for (auto quest : BetterQuests::get()->quests) {
-        log::info("{}",quest.difficulty);
-        log::info("{}",difficulty);
-        if (quest.difficulty == difficulty){
+        if (quest.difficulty == difficulty) {
           id++;
-        auto node = QuestNode::create(quest, {360.f, 70.f});
-        node->setID(fmt::format("quest-node-{}", id));
-        m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+          auto node = QuestNode::create(quest, {360.f, 70.f});
+          node->setID(fmt::format("quest-node-{}", id));
+          m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
         }
       }
       m_questMenu->updateLayout();
@@ -138,13 +143,15 @@ void QuestPopup::loadQuests() {
       schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
 
       if (!m_timerLabel) {
-      m_timerLabel = CCLabelBMFont::create(
-        fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(),
-        "goldFont.fnt");
-      m_timerLabel->setID("timer-label");
-      m_timerLabel->setScale(0.5f);
-      m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
-    }
+        m_timerLabel = CCLabelBMFont::create(
+            fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(),
+            "goldFont.fnt");
+        m_timerLabel->setID("timer-label");
+        m_timerLabel->setScale(0.5f);
+        m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom,
+                                        {0.f, 12.5f});
+      }
+      loadingCircle->fadeAndRemove();
     }
   });
 
@@ -152,8 +159,6 @@ void QuestPopup::loadQuests() {
   m_listener.setFilter(
       req.get(fmt::format("{}/enduser/getquests",
                           BetterQuests::get()->getServerUrl(), difficulty)));
-
-  loadingCircle->fadeAndRemove();
 }
 
 void QuestPopup::updateTimer(float) {
