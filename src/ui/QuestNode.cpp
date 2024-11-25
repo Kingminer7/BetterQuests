@@ -111,7 +111,7 @@ QuestNode *QuestNode::create(Quest quest, CCSize size) {
 void QuestNode::onClaim(CCObject *Sender) {
   if (quest.progress >= quest.quantity) {
     BetterQuests::get()->completeQuest(quest);
-    FMODAudioEngine::sharedEngine()->playEffect("reward01.ogg", 1, 1, 1);
+    FMODAudioEngine::sharedEngine()->playEffect("reward01.ogg");
     log::info("should have played sound");
     this->exit();
   }
