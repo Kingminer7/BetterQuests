@@ -3,11 +3,12 @@
 #include "Geode/cocos/actions/CCActionInstant.h"
 #include <cstdlib>
 
-bool QuestNode::init(Quest quest, CCSize size) {
+bool QuestNode::init(QuestPopup *popup, Quest quest, CCSize size) {
   if (!CCNode::init()) {
     return false;
   }
 
+  this->popup = popup;
   this->quest = quest;
 
   this->setContentSize(size);
@@ -98,9 +99,9 @@ bool QuestNode::init(Quest quest, CCSize size) {
   return true;
 }
 
-QuestNode *QuestNode::create(Quest quest, CCSize size) {
+QuestNode *QuestNode::create(QuestPopup *popup, Quest quest, CCSize size) {
   auto ret = new QuestNode;
-  if (ret && ret->init(quest, size)) {
+  if (ret && ret->init(popup, quest, size)) {
     ret->autorelease();
     return ret;
   }
@@ -111,14 +112,15 @@ QuestNode *QuestNode::create(Quest quest, CCSize size) {
 void QuestNode::onClaim(CCObject *Sender) {
   if (quest.progress >= quest.quantity) {
     BetterQuests::get()->completeQuest(quest);
-    FMODAudioEngine::sharedEngine()->playEffect("reward01.ogg");
-    log::info("should have played sound");
+    popup->m_scrollLabel->setString(
+        fmt::format("{} ", BetterQuests::get()->getScrolls()).c_str());
+    FMODAudioEngine::sharedEngine()->playEffect("gold01.ogg");
     this->exit();
   }
 }
 
 void QuestNode::exit() {
-  auto elast = CCEaseElasticIn::create(CCMoveTo::create(.4, {CCDirector::get()->getWinSize().width / 570 * -400.f, getPositionY()}), 1.2);
+  auto elast = CCEaseElasticIn::create(CCMoveTo::create(.3, {CCDirector::get()->getWinSize().width / 570 * -400.f, getPositionY()}), 1.2);
   auto func = CCCallFunc::create(this, callfunc_selector(QuestNode::removeFromParent));
   auto seq = CCSequence::create(elast, func, 0);
   runAction(seq);

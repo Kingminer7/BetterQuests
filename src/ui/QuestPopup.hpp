@@ -15,6 +15,7 @@ protected:
     void updateTimer(float);
     CCMenu *m_questMenu;
 public:
+    CCLabelBMFont *m_scrollLabel = nullptr;
     static QuestPopup* create();
     void loadQuests();
 };

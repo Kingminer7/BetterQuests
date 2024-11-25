@@ -52,13 +52,13 @@ bool QuestPopup::setup() {
   scrollIcon->setID("scroll-icon");
   m_mainLayer->addChildAtPosition(scrollIcon, Anchor::TopRight, {-15.f, -15.f});
 
-  CCLabelBMFont *scrollLabel = CCLabelBMFont::create(
+  m_scrollLabel = CCLabelBMFont::create(
       fmt::format("{} ", BetterQuests::get()->getScrolls()).c_str(),
       "bigFont.fnt");
-  scrollLabel->setScale(0.5f);
-  scrollLabel->setAnchorPoint({1, 0.5});
-  scrollLabel->setID("scroll-label");
-  m_mainLayer->addChildAtPosition(scrollLabel, Anchor::TopRight,
+  m_scrollLabel->setScale(0.5f);
+  m_scrollLabel->setAnchorPoint({1, 0.5});
+  m_scrollLabel->setID("scroll-label");
+  m_mainLayer->addChildAtPosition(m_scrollLabel, Anchor::TopRight,
                                   {-25.f, -15.f});
 
   this->loadQuests();
@@ -88,7 +88,7 @@ void QuestPopup::loadQuests() {
     for (auto quest : BetterQuests::get()->quests) {
       if (quest.difficulty == difficulty && std::find(BetterQuests::get()->completedQuests.begin(), BetterQuests::get()->completedQuests.end(), quest.id) == BetterQuests::get()->completedQuests.end()) {
         id++;
-        auto node = QuestNode::create(quest, {360.f, 70.f});
+        auto node = QuestNode::create(this, quest, {360.f, 70.f});
         node->setID(fmt::format("quest-node-{}", id));
         m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
       }
@@ -135,7 +135,7 @@ void QuestPopup::loadQuests() {
       for (auto quest : BetterQuests::get()->quests) {
         if (quest.difficulty == difficulty && std::find(BetterQuests::get()->completedQuests.begin(), BetterQuests::get()->completedQuests.end(), quest.id) == BetterQuests::get()->completedQuests.end()) {
           id++;
-          auto node = QuestNode::create(quest, {360.f, 70.f});
+          auto node = QuestNode::create(this, quest, {360.f, 70.f});
           node->setID(fmt::format("quest-node-{}", id));
           m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
         }
