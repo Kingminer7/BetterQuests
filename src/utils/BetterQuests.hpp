@@ -40,7 +40,7 @@ public:
   void completeQuest(Quest quest) {
     scrolls += quest.reward;
     Mod::get()->setSavedValue<int>("scrolls", scrolls);
-    completedQuests.push_back(quest.id);
+    // completedQuests.push_back(quest.id);
     Mod ::get()->setSavedValue<std::vector<int>>("completedQuests", completedQuests);
   }
 };
