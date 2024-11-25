@@ -24,5 +24,11 @@
 				"resources/sprites/scroll.png"
 			]
 		}
-	}
+	},
+	"tags": [
+		"modtober24",
+		"content",
+		"enhancement",
+		"online"
+	]
 }

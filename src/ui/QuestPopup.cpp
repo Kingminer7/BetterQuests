@@ -117,7 +117,6 @@ void QuestPopup::loadQuests() {
         loadingCircle->fadeAndRemove();
         return;
       }
-      log::info("{}", res->string().unwrapOrDefault());
       auto quests = res->json()
                         .unwrapOrDefault()["quests"]
                         .as<std::vector<Quest>>()
