@@ -113,6 +113,7 @@ void QuestPopup::loadQuests() {
 
   m_listener.bind([this, loadingCircle](web::WebTask::Event *e) {
     if (web::WebResponse *res = e->getValue()) {
+      log::info(res->string());
       if (!res->ok()) {
         loadingCircle->fadeAndRemove();
         return;
