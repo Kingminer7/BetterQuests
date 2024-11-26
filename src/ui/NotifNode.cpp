@@ -95,6 +95,8 @@ void NotifNode::playAnim(int) {
       1.2);
   auto func =
       CCCallFunc::create(this, callfunc_selector(NotifNode::removeFromParent));
-  auto seq = CCSequence::create(eIn, del, eOut, func, 0);
+  auto func2 =
+      CCCallFunc::create(this, callfunc_selector(NotifNode::release));
+  auto seq = CCSequence::create(eIn, del, eOut, func, func2, 0);
   runAction(seq);
 }

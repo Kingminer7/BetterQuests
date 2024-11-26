@@ -71,7 +71,8 @@ void QuestPopup::loadQuests() {
                  std::chrono::system_clock::now().time_since_epoch())
                  .count();
   for (CCNode *node : CCArrayExt<CCNode *>(m_questMenu->getChildren())) {
-    delete node;
+    node->removeFromParent();
+    node->release();
   }
 
   auto loadingCircle = LoadingCircle::create();

@@ -121,6 +121,7 @@ void QuestNode::onClaim(CCObject *Sender) {
 void QuestNode::exit() {
   auto elast = CCEaseElasticIn::create(CCMoveTo::create(.3, {CCDirector::get()->getWinSize().width / 570 * -getContentWidth(), getPositionY()}), 1.2);
   auto func = CCCallFunc::create(this, callfunc_selector(QuestNode::removeFromParent));
-  auto seq = CCSequence::create(elast, func, 0);
+  auto func2 = CCCallFunc::create(this, callfunc_selector(QuestNode::release));
+  auto seq = CCSequence::create(elast, func, func2, 0);
   runAction(seq);
 }
