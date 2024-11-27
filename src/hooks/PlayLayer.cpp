@@ -94,18 +94,39 @@ std::string diffToStr(LevelDifficulty diff) {
 }
 
 class $modify(BQPL, PlayLayer) {
+    struct Fields
+    {
+        std::vector<EffectGameObject*> coins;
+    };
+
+    void addObject(GameObject* p0)
+    {
+        PlayLayer::addObject(p0);
+        if (p0->m_objectType == GameObjectType::UserCoin || p0->m_objectType == GameObjectType::SecretCoin) // 142 
+        {
+           m_fields->coins.push_back(as<EffectGameObject*>(p0));
+        }
+    }
+
+    int getCollectedCoins()
+    {
+        int k = 0;
+        for (auto coin : m_fields->coins)
+        {
+            if (coin->getOpacity() == 0)
+                k++;
+        }
+        return k;
+    }
 
     bool checkStandards(Quest quest) {
         std::vector<std::string> invalidities = {};
+        if (m_level->m_stars <= 0) invalidities.push_back("unrated");
         if (quest.type == "BeatLevels") {
             if (quest.specifications["difficulty"].asString().unwrapOrDefault() != "") {
-                log::info("Difficulty key exists.");
                 if (quest.specifications["difficulty"].asString().unwrapOrDefault() != diffToStr(getLevelDifficulty(m_level))) {
-                    log::info("Difficulty key is not exactly same.");
                     if (quest.specifications["difficulty"].asString().unwrapOrDefault() == "Demon") {
-                        log::info("Difficulty key is demon.");
                         if (diffToStr(getLevelDifficulty(m_level)).find("Demon") == std::string::npos) {
-                            log::info("Difficulty key is not valid demon.");
                             invalidities.push_back("difficulty");
                         }
                     } else {
@@ -114,30 +135,28 @@ class $modify(BQPL, PlayLayer) {
                 }
             }
             if (quest.specifications["type"].asString().unwrapOrDefault() != "") {
-                log::info("Type key exists.");
                 auto type = m_level->isPlatformer() ? "platformer" : "classic";
                 if (quest.specifications["type"].asString().unwrapOrDefault() != type) {
-                    log::info("Type key is not exactly same.");
                     invalidities.push_back("type");
                 }
             }
             if (quest.specifications["max_attempts"].asInt().unwrapOrDefault() != 0) {
-                log::info("Max attempts key exists.");
                 if (quest.specifications["max_attempts"].asInt().unwrapOrDefault() < m_attempts) {
                     log::info("Max attempts key is not valid.");
-                    invalidities.push_back("maxAttempts");
                 }
             }
-            
 
-
-            // i dont flippin know how
-
-            // if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
-            //     if (quest.specifications["coins"].asInt().unwrapOrDefault() != m_level->m_coins) {
-            //         invalidities.push_back("coins");
-            //     }
-            // }
+            // Thanks Doggo and Justin
+            if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
+                int coinsNeeded = quest.specifications["coins"].asInt().unwrapOrDefault();
+                if (coinsNeeded > m_fields->coins.size()) {
+                    log::info("Coins key is larger than coins in level, adjusting...");
+                    coinsNeeded = m_fields->coins.size();
+                }
+                if (getCollectedCoins() < coinsNeeded) {
+                    invalidities.push_back("coins");
+                }
+            }
         }
         else if (quest.type == "CompleteLevel") {
             if (quest.specifications["max_attempts"].asInt().unwrapOrDefault() != 0) {
@@ -151,14 +170,17 @@ class $modify(BQPL, PlayLayer) {
                 }
             }
 
-            
-            // i dont flippin know how
-
-            // if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
-            //     if (quest.specifications["coins"].asInt().unwrapOrDefault() != m_level->m_coins) {
-            //         invalidities.push_back("coins");
-            //     }
-            // }
+            // Thanks Doggo and Justin
+            if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
+                int coinsNeeded = quest.specifications["coins"].asInt().unwrapOrDefault();
+                if (coinsNeeded > m_fields->coins.size()) {
+                    coinsNeeded = m_fields->coins.size();
+                }
+                log::info("Got: {}. Need: {}.", getCollectedCoins(), coinsNeeded);
+                if (getCollectedCoins() < coinsNeeded) {
+                    invalidities.push_back("coins");
+                }
+            }
         }
         else {
             invalidities.push_back("invalid");
