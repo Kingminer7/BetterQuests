@@ -1,6 +1,6 @@
 #include "NotifNode.hpp"
 
-bool NotifNode::init(Quest quest, CCSize size) {
+bool NotifNode::init(Quest quest, CCSize size, bool skipdelay) {
   if (!CCNode::init()) {
     return false;
   }
@@ -70,13 +70,14 @@ bool NotifNode::init(Quest quest, CCSize size) {
   progBarLabel->setID("progress-label");
   progBar->addChildAtPosition(progBarLabel, Anchor::Center, {0.f, 0.f});
 
-  scheduleOnce(schedule_selector(NotifNode::playAnim), 4);
+  if (skipdelay) playAnim(0);
+  else scheduleOnce(schedule_selector(NotifNode::playAnim), 4); 
   return true;
 }
 
-NotifNode *NotifNode::create(Quest quest, CCSize size) {
+NotifNode *NotifNode::create(Quest quest, CCSize size, bool skipdelay) {
   auto ret = new NotifNode;
-  if (ret && ret->init(quest, size)) {
+  if (ret && ret->init(quest, size, skipdelay)) {
     ret->autorelease();
     return ret;
   }

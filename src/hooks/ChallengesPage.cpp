@@ -21,8 +21,6 @@ class $modify(myChP, ChallengesPage) {
             return false;
         }
 
-        log::info("{}", getServer());
-
         auto myButton = CCMenuItemSpriteExtra::create(
             CircleButtonSprite::createWithSpriteFrameName("scroll.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::SmallAlt),
             this,

@@ -1,39 +1,31 @@
+#include "Geode/binding/GameStatsManager.hpp"
 using namespace geode::prelude;
 
 #include "../ui/NotifNode.hpp"
 #include "../utils/BetterQuests.hpp"
-#include <Geode/modify/LevelListLayer.hpp>
+#include <Geode/modify/GameStatsManager.hpp>
 
-class $modify(BQLLL, LevelListLayer) {
-
-    bool checkStandards(Quest quest) {
-        std::vector<std::string> invalidities;
-        if (m_levelList->m_diamonds <= 0) invalidities.push_back("unrated");
-        if (quest.type == "BeatLists") {
+class $modify(BQPL, GameStatsManager) {
+    
+    std::vector<std::string> checkStandards(Quest quest) {
+        std::vector<std::string> invalidities = {};
+        if (quest.type == "DestroyIcons") {
             
         }
-        // disabled because players may not be able to do it if list completed already
-        // else if (quest.type == "CompleteList") {
-        //     if (quest.specifications["id"].asInt().unwrapOrDefault() != 0) {
-        //         if (quest.specifications["id"].asInt().unwrapOrDefault() != m_levelList->m_listID) {
-        //             invalidities.push_back("id");
-        //         }
-        //     }
-
-        // }
         else {
             invalidities.push_back("invalid");
         }
-        return invalidities.size() < 1;
+        return invalidities;
     }
 
-    void onClaimReward(CCObject * obj) {
-        LevelListLayer::onClaimReward(obj);
-
+    void incrementStat(const char *stat, int incr) {
+        GameStatsManager::incrementStat(stat, incr);
+        if (strcmp(stat, "9") == 0) {
         for (Quest& quest : BetterQuests::get()->quests) {
-            if (checkStandards(quest)) {
-                if (quest.progress < quest.quantity) {
-                    quest.progress++;
+            std::vector<std::string> meetsStandards = checkStandards(quest);
+            if (meetsStandards.size() <= 0) {
+                if (quest.progress + incr <= quest.quantity) {
+                    quest.progress += incr;
                     Mod::get()->setSavedValue("quests", BetterQuests::get()->quests);
                     if (quest.progress >= quest.quantity) {
                         auto node = NotifNode::create(quest, { 290.f, 70.f }, true);
@@ -45,7 +37,10 @@ class $modify(BQLLL, LevelListLayer) {
                         CCDirector::get()->getRunningScene()->addChild(node);
                     }
                 }
+            } else {
+                auto standardsStr = fmt::to_string(fmt::join(meetsStandards, ", "));
             }
+        }
         }
     }
 

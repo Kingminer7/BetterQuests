@@ -1,9 +1,9 @@
 using namespace geode::prelude;
 
-#include "../apis/eclipse.hpp"
 #include "../ui/NotifNode.hpp"
 #include "../utils/BetterQuests.hpp"
 #include <Geode/modify/PlayLayer.hpp>
+#include "../apis/eclipse.hpp"
 
 // Thank you prevter
 enum class LevelDifficulty {
@@ -119,7 +119,7 @@ class $modify(BQPL, PlayLayer) {
         return k;
     }
 
-    bool checkStandards(Quest quest) {
+    std::vector<std::string> checkStandards(Quest quest) {
         std::vector<std::string> invalidities = {};
         if (m_level->m_stars <= 0) invalidities.push_back("unrated");
         if (quest.type == "BeatLevels") {
@@ -138,11 +138,18 @@ class $modify(BQPL, PlayLayer) {
                 auto type = m_level->isPlatformer() ? "platformer" : "classic";
                 if (quest.specifications["type"].asString().unwrapOrDefault() != type) {
                     invalidities.push_back("type");
+                } else if (quest.specifications["type"].asString().unwrapOrDefault() == "platformer") {
+                    if (quest.specifications["max_time"].asInt().unwrapOrDefault() != 0) {
+                        if (quest.specifications["max_time"].asInt().unwrapOrDefault() < m_attemptTime) {
+                            invalidities.push_back("maxTime");
+                        }
+                        
+                    }
                 }
             }
             if (quest.specifications["max_attempts"].asInt().unwrapOrDefault() != 0) {
                 if (quest.specifications["max_attempts"].asInt().unwrapOrDefault() < m_attempts) {
-                    log::info("Max attempts key is not valid.");
+                    invalidities.push_back("maxAttempts");
                 }
             }
 
@@ -150,7 +157,6 @@ class $modify(BQPL, PlayLayer) {
             if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
                 int coinsNeeded = quest.specifications["coins"].asInt().unwrapOrDefault();
                 if (coinsNeeded > m_fields->coins.size()) {
-                    log::info("Coins key is larger than coins in level, adjusting...");
                     coinsNeeded = m_fields->coins.size();
                 }
                 if (getCollectedCoins() < coinsNeeded) {
@@ -169,6 +175,13 @@ class $modify(BQPL, PlayLayer) {
                     invalidities.push_back("id");
                 }
             }
+            if (m_level->isPlatformer()) {
+                if (quest.specifications["max_time"].asInt().unwrapOrDefault() != 0) {
+                    if (quest.specifications["max_time"].asInt().unwrapOrDefault() < m_attemptTime) {
+                        invalidities.push_back("maxTime");
+                    }
+                }
+            }
 
             // Thanks Doggo and Justin
             if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
@@ -176,7 +189,6 @@ class $modify(BQPL, PlayLayer) {
                 if (coinsNeeded > m_fields->coins.size()) {
                     coinsNeeded = m_fields->coins.size();
                 }
-                log::info("Got: {}. Need: {}.", getCollectedCoins(), coinsNeeded);
                 if (getCollectedCoins() < coinsNeeded) {
                     invalidities.push_back("coins");
                 }
@@ -185,7 +197,7 @@ class $modify(BQPL, PlayLayer) {
         else {
             invalidities.push_back("invalid");
         }
-        return invalidities.size() < 1;
+        return invalidities;
     }
 
     void levelComplete() {
@@ -205,7 +217,8 @@ class $modify(BQPL, PlayLayer) {
 
 
         for (Quest& quest : BetterQuests::get()->quests) {
-            if (checkStandards(quest)) {
+            std::vector<std::string> meetsStandards = checkStandards(quest);
+            if (meetsStandards.size() <= 0) {
                 if (quest.progress < quest.quantity) {
                     quest.progress++;
                     Mod::get()->setSavedValue("quests", BetterQuests::get()->quests);
@@ -219,6 +232,8 @@ class $modify(BQPL, PlayLayer) {
                         CCDirector::get()->getRunningScene()->addChild(node);
                     }
                 }
+            } else {
+                auto standardsStr = fmt::to_string(fmt::join(meetsStandards, ", "));
             }
         }
     }
