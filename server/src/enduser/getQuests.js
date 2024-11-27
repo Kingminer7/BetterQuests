@@ -23,7 +23,7 @@ const module = {
 			}
 			seed += hash;
 
-			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY SIN(${seed} + Id) LIMIT 3`;
+			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY ABS(SIN(${seed} * 0.1 + Id * 0.5)) LIMIT 3`;
 
 			const { results } = await env.db.prepare(query).all();
 
