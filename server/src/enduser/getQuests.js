@@ -1,5 +1,14 @@
 import config from '../config';
 
+function mulberry32(a) {
+	return function () {
+		var t = (a += 0x6d2b79f5);
+		t = Math.imul(t ^ (t >>> 15), t | 1);
+		t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+	};
+}
+
 const module = {
 	name: 'EndUser:GetQuests',
 	execute: async function (req, env, ctx) {
@@ -23,7 +32,8 @@ const module = {
 			}
 			seed += hash;
 
-			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY ABS(SIN(${seed} * 0.1 + Id * 0.5)) LIMIT 3`;
+			const rand = mulberry32(seed)
+			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY SIN(${rand(seed)} + id)`;// LIMIT 3;`;
 
 			const { results } = await env.db.prepare(query).all();
 
