@@ -82,7 +82,7 @@ const module = {
 					const level = levels.results[i] || {
 						Name: 'No Level',
 						LevelId: 0,
-						QuestName: 'a',
+						QuestName: '',
 					}
 					results[i].Name = results[i].Name.replace(`{{levelname}}`, level.Name).replace(
 						`{{levelid}}`,

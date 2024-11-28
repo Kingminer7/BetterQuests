@@ -162,6 +162,9 @@ class $modify(BQPL, PlayLayer) {
                 if (getCollectedCoins() < coinsNeeded) {
                     invalidities.push_back("coins");
                 }
+                if (coinsNeeded == 0) {
+                    invalidities.push_back("coins");
+                }
             }
         }
         else if (quest.type == "CompleteLevel") {
@@ -190,6 +193,9 @@ class $modify(BQPL, PlayLayer) {
                     coinsNeeded = m_fields->coins.size();
                 }
                 if (getCollectedCoins() < coinsNeeded) {
+                    invalidities.push_back("coins");
+                }
+                if (coinsNeeded == 0) {
                     invalidities.push_back("coins");
                 }
             }
