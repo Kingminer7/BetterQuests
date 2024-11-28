@@ -1,7 +1,6 @@
 #include "QuestPopup.hpp"
 #include "../utils/BetterQuests.hpp"
 #include "Geode/binding/LoadingCircle.hpp"
-#include "Geode/cocos/label_nodes/CCLabelBMFont.h"
 #include "Geode/ui/Layout.hpp"
 #include "QuestNode.hpp"
 
@@ -47,7 +46,7 @@ bool QuestPopup::setup() {
   m_questMenu->setLayout(AxisLayout::create(Axis::Column));
   m_mainLayer->addChildAtPosition(m_questMenu, Anchor::Center, {0.f, 0.f});
 
-  CCSprite *scrollIcon = CCSprite::createWithSpriteFrameName("scroll.png"_spr);
+  auto scrollIcon = CCSprite::createWithSpriteFrameName("scroll.png"_spr);
   scrollIcon->setScale(1.5f);
   scrollIcon->setID("scroll-icon");
   m_mainLayer->addChildAtPosition(scrollIcon, Anchor::TopRight, {-15.f, -15.f});
@@ -61,12 +60,37 @@ bool QuestPopup::setup() {
   m_mainLayer->addChildAtPosition(m_scrollLabel, Anchor::TopRight,
                                   {-25.f, -15.f});
 
+  auto arrowMenu = CCMenu::create();
+  arrowMenu->setID("arrow-menu");
+  m_mainLayer->addChildAtPosition(arrowMenu, Anchor::Center, {0.f, 0.f});
+
+  m_leftButton = CCMenuItemSpriteExtra::create(
+      CCSprite::createWithSpriteFrameName("navArrowBtn_001.png"),
+      this, (SEL_MenuHandler)&QuestPopup::onLeft);
+  m_leftButton->setID("left-arrow");
+  m_leftButton->getChildByType<CCSprite>(0)->setFlipX(true);
+  m_leftButton->setVisible(false);
+
+  m_rightButton = CCMenuItemSpriteExtra::create(
+      CCSprite::createWithSpriteFrameName("navArrowBtn_001.png"),
+      this, (SEL_MenuHandler)&QuestPopup::onRight);
+  m_rightButton->setID("right-arrow");
+
+  arrowMenu->addChildAtPosition(m_leftButton, Anchor::Center, {-240.f, 0.f});
+  arrowMenu->addChildAtPosition(m_rightButton, Anchor::Center, {240.f, 0.f});
+
+  m_titleLabel = CCLabelBMFont::create(fmt::format("{} Quests", difficulty).c_str(), "goldFont.fnt");
+  m_titleLabel->setScale(0.75f);
+  m_titleLabel->setID("title-label");
+  m_mainLayer->addChildAtPosition(m_titleLabel, Anchor::Top, {0.f, -15.f});
+
   this->loadQuests();
 
   return true;
 }
 
 void QuestPopup::loadQuests() {
+  m_titleLabel->setString(fmt::format("{} Quests", difficulty).c_str());
   auto now = std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::system_clock::now().time_since_epoch())
                  .count();
@@ -188,4 +212,26 @@ QuestPopup *QuestPopup::create() {
 
   delete ret;
   return nullptr;
+}
+
+void QuestPopup::onLeft(CCObject *) {
+  auto it = std::find(diffs.begin(), diffs.end(), difficulty);
+  if (it != diffs.begin()) {
+    it--;
+    difficulty = *it;
+  } else {
+    difficulty = diffs[diffs.size() - 1];
+  }
+  this->loadQuests();
+}
+
+void QuestPopup::onRight(CCObject *) {
+  auto it = std::find(diffs.begin(), diffs.end(), difficulty);
+  if (it != diffs.end() - 1) {
+    it++;
+    difficulty = *it;
+  } else {
+    difficulty = diffs[0];
+  }
+  this->loadQuests();
 }

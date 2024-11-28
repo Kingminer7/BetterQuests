@@ -22,8 +22,8 @@ const module = {
 			quests: [],
 		};
 
-		for (var type of ['easy', 'medium', 'hard', 'expert', 'master', 'grandmaster']) {
-			var seed = day * env.secretnumberlol;
+		for (var type of ['easy', 'medium', 'hard', 'expert', 'extreme', 'master']) {
+			var seed = day * env.secretnumberlol || 0;
 			var hash = 0,
 				len = type.length;
 			for (var i = 0; i < len; i++) {
@@ -33,7 +33,7 @@ const module = {
 			seed += hash;
 
 			const rand = mulberry32(seed)
-			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY SIN(${rand(seed)} + id)`;// LIMIT 3;`;
+			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY SIN(${rand(seed)} + id) LIMIT 3;`;
 
 			const { results } = await env.db.prepare(query).all();
 
@@ -71,35 +71,35 @@ const module = {
 				let ins = `UPDATE GeneralData SET LastUpd${type} = ${day}, MaximumTrophies = ${i};`;
 				var res = await env.db.prepare(ins).all();
 			}
+			let query2 = `SELECT * FROM Levels WHERE Difficulty = '${type}' ORDER BY SIN(${rand(seed)} + id) LIMIT 3;`;
+			const levels = await env.db.prepare(query2).all();
 			for (var i = 0; i < results.length; i++) {
 				if (
 					results[i].Name.includes(`{{levelname}}`) ||
 					results[i].Description.includes(`{{levelname}}`) ||
 					results[i].Specifications.includes(`{{levelname}}`)
 				) {
-					let level = await env.db.prepare(`SELECT * FROM Levels WHERE Difficulty = '${type}' ORDER BY SIN(${seed * i} + Id) LIMIT 1`);
-					level = await level.all();
-					if (level.results.length === 0) {
-						return new Response(`{"error": {"code": "3", "reason": "No levels found."}}`, {
-							headers: { 'Content-Type': 'application/json' },
-						});
+					const level = levels.results[i] || {
+						Name: 'No Level',
+						LevelId: 0,
+						QuestName: 'a',
 					}
-					results[i].Name = results[i].Name.replace(`{{levelname}}`, level.results[0].Name).replace(
+					results[i].Name = results[i].Name.replace(`{{levelname}}`, level.Name).replace(
 						`{{levelid}}`,
-						level.results[0].LevelId
+						level.LevelId
 					);
-					results[i].Description = results[i].Description.replace(`{{levelname}}`, level.results[0].Name).replace(
+					results[i].Description = results[i].Description.replace(`{{levelname}}`, level.Name).replace(
 						`{{levelid}}`,
-						level.results[0].LevelId
+						level.LevelId
 					);
-					results[i].Specifications = results[i].Specifications.replace(`{{levelname}}`, level.results[0].Name).replace(
+					results[i].Specifications = results[i].Specifications.replace(`{{levelname}}`, level.Name).replace(
 						`{{levelid}}`,
-						level.results[0].LevelId
+						level.LevelId
 					);
-					if (level.results[0].QuestName !== '') results[i].Name = level.results[0].QuestName;
+					if (level.QuestName !== '') results[i].Name = level.QuestName;
 				}
 			}
-			console.log(results)
+			// console.log(results)
 			results.forEach(res=>{
 				resp.quests.push(res)
 			})
