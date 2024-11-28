@@ -21,18 +21,19 @@ class BetterQuests {
 private:
   static BetterQuests *instance;
   std::string serverUrl =
-      /*"http://localhost:8787";*/ "https://bq.km7dev.tech";
+      // "http://localhost:8787";*/
+      "https://bq.km7dev.tech";
   // std::string authUrl = "http://localhost:3000/api/v1";
   BetterQuests() { scrolls = Mod::get()->getSavedValue<int>("scrolls"); };
   int scrolls = 0;
-
 public:
   static BetterQuests *get();
   std::string getServerUrl();
   // std::string getAuthUrl();
   std::vector<Quest> quests;
   std::vector<int> completedQuests;
-  int resetsAt;
+  int lastReload = 0;
+  int resetsAt = 0;
 
   int getScrolls();
   void addScrolls(int amount);

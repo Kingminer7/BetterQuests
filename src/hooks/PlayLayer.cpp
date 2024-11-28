@@ -218,6 +218,7 @@ class $modify(BQPL, PlayLayer) {
 
         for (Quest& quest : BetterQuests::get()->quests) {
             std::vector<std::string> meetsStandards = checkStandards(quest);
+            auto standardsStr = fmt::to_string(fmt::join(meetsStandards, ", "));
             if (meetsStandards.size() <= 0) {
                 if (quest.progress < quest.quantity) {
                     quest.progress++;

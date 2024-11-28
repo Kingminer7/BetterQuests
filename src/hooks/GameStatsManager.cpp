@@ -5,7 +5,7 @@ using namespace geode::prelude;
 #include "../utils/BetterQuests.hpp"
 #include <Geode/modify/GameStatsManager.hpp>
 
-class $modify(BQPL, GameStatsManager) {
+class $modify(BQGSM, GameStatsManager) {
     
     std::vector<std::string> checkStandards(Quest quest) {
         std::vector<std::string> invalidities = {};

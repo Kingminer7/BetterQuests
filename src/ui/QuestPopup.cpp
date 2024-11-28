@@ -1,13 +1,18 @@
 #include "QuestPopup.hpp"
 #include "../utils/BetterQuests.hpp"
-#include "Geode/binding/LoadingCircle.hpp"
-#include "Geode/ui/Layout.hpp"
 #include "QuestNode.hpp"
 
 bool QuestPopup::setup() {
 
   setID("quest-popup"_spr);
   m_mainLayer->setID("main-layer");
+  m_buttonMenu->setID("button-menu");
+  if (auto backBtn = m_buttonMenu->getChildByType<CCMenuItemSpriteExtra>(0)) {
+    backBtn->setID("back-button");
+    backBtn->removeFromParent();
+    backBtn->getChildByType<CCSprite>(0)->setScale(1.f);
+    m_buttonMenu->addChildAtPosition(backBtn, Anchor::TopLeft, {10.f, -10.f});
+  }
 
   auto tlCorner =
       CCSprite::createWithSpriteFrameName("dailyLevelCorner_001.png");
@@ -68,8 +73,7 @@ bool QuestPopup::setup() {
       CCSprite::createWithSpriteFrameName("navArrowBtn_001.png"),
       this, (SEL_MenuHandler)&QuestPopup::onLeft);
   m_leftButton->setID("left-arrow");
-  m_leftButton->getChildByType<CCSprite>(0)->setFlipX(true);
-  m_leftButton->setVisible(false);
+  m_leftButton->getChildByType<CCSprite>(0)->setFlipX(true);  
 
   m_rightButton = CCMenuItemSpriteExtra::create(
       CCSprite::createWithSpriteFrameName("navArrowBtn_001.png"),
@@ -84,20 +88,26 @@ bool QuestPopup::setup() {
   m_titleLabel->setID("title-label");
   m_mainLayer->addChildAtPosition(m_titleLabel, Anchor::Top, {0.f, -15.f});
 
+  auto reloadBtn = CCMenuItemSpriteExtra::create(
+      CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png"),
+      this, menu_selector(QuestPopup::onReload));
+  reloadBtn->setID("reload-button");
+  m_buttonMenu->addChildAtPosition(reloadBtn, Anchor::BottomRight,{-15.f, 15.f});
+
   this->loadQuests();
 
   return true;
 }
 
 void QuestPopup::loadQuests() {
+  if (loading)
+    return;
+  loading = true;
   m_titleLabel->setString(fmt::format("{} Quests", difficulty).c_str());
   auto now = std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::system_clock::now().time_since_epoch())
                  .count();
-  for (CCNode *node : CCArrayExt<CCNode *>(m_questMenu->getChildren())) {
-    node->removeFromParent();
-    node->release();
-  }
+  m_questMenu->removeAllChildren();
 
   auto loadingCircle = LoadingCircle::create();
   loadingCircle->setID("loading-circle");
@@ -133,6 +143,10 @@ void QuestPopup::loadQuests() {
     QuestPopup::updateTimer(0);
     schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
     loadingCircle->fadeAndRemove();
+    loading = false;
+    BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count();
     return;
   }
 
@@ -140,6 +154,10 @@ void QuestPopup::loadQuests() {
     if (web::WebResponse *res = e->getValue()) {
       if (!res->ok()) {
         loadingCircle->fadeAndRemove();
+        loading = false;
+        BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count();
         return;
       }
       auto quests = res->json()
@@ -178,6 +196,10 @@ void QuestPopup::loadQuests() {
       QuestPopup::updateTimer(0);
       schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
       loadingCircle->fadeAndRemove();
+      loading = false;
+      BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count();
     }
   });
 
@@ -215,6 +237,8 @@ QuestPopup *QuestPopup::create() {
 }
 
 void QuestPopup::onLeft(CCObject *) {
+  if (loading)
+    return;
   auto it = std::find(diffs.begin(), diffs.end(), difficulty);
   if (it != diffs.begin()) {
     it--;
@@ -226,6 +250,8 @@ void QuestPopup::onLeft(CCObject *) {
 }
 
 void QuestPopup::onRight(CCObject *) {
+  if (loading)
+    return;
   auto it = std::find(diffs.begin(), diffs.end(), difficulty);
   if (it != diffs.end() - 1) {
     it++;
@@ -234,4 +260,79 @@ void QuestPopup::onRight(CCObject *) {
     difficulty = diffs[0];
   }
   this->loadQuests();
+}
+
+void QuestPopup::onReload(CCObject *) {
+  if (loading)
+    return;
+  auto now = std::chrono::duration_cast<std::chrono::seconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count();
+  if (now - BetterQuests::get()->lastReload < 20) {
+    return;
+  }
+  m_questMenu->removeAllChildren();
+  auto loadingCircle = LoadingCircle::create();
+  loadingCircle->setID("loading-circle");
+  loadingCircle->setParentLayer(m_mainLayer);
+  loadingCircle->setScale(1.f);
+  loadingCircle->show();
+  loadingCircle->setPosition((m_mainLayer->getContentSize() - loadingCircle->getContentSize()) / 2);
+  loading = true;
+  m_listener.bind([this, loadingCircle](web::WebTask::Event *e) {
+    if (web::WebResponse *res = e->getValue()) {
+      if (!res->ok()) {
+        loadingCircle->fadeAndRemove();
+        loading = false;
+        BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count();
+        return;
+      }
+      auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
+      if (BetterQuests::get()->resetsAt < res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault()) {
+        BetterQuests::get()->completedQuests = std::vector<int>();
+        Mod::get()->setSavedValue<std::vector<int>>("completedQuests", BetterQuests::get()->completedQuests);
+      } else {
+        for (Quest &quest : quests) {
+          auto it = std::find_if(BetterQuests::get()->quests.begin(), BetterQuests::get()->quests.end(), [&quest](Quest q) { return q.id == quest.id; });
+          if (it != BetterQuests::get()->quests.end()) {
+            quest.progress = it->progress;
+          }
+        }
+      }
+      BetterQuests::get()->quests = quests;
+      BetterQuests::get()->resetsAt = res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault();
+      Mod::get()->setSavedValue<int>("resetsAt", BetterQuests::get()->resetsAt);
+      Mod::get()->setSavedValue<std::vector<Quest>>("quests", quests);
+
+      int id = 0;
+      for (auto quest : BetterQuests::get()->quests) {
+        if (quest.difficulty == difficulty && std::find(BetterQuests::get()->completedQuests.begin(), BetterQuests::get()->completedQuests.end(), quest.id) == BetterQuests::get()->completedQuests.end()) {
+          id++;
+          auto node = QuestNode::create(this, quest, {360.f, 70.f});
+          node->setID(fmt::format("quest-node-{}", id));
+          m_questMenu->addChildAtPosition(node, Anchor::Center, {0.f, 0.f});
+        }
+      }
+      m_questMenu->updateLayout();
+
+      if (!m_timerLabel) {
+        m_timerLabel = CCLabelBMFont::create(fmt::format("New quests in {:02}:{:02}:{:02}", 0, 0, 0).c_str(), "goldFont.fnt");
+        m_timerLabel->setID("timer-label");
+        m_timerLabel->setScale(0.5f);
+        m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
+      }
+      QuestPopup::updateTimer(0);
+      schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
+      loadingCircle->fadeAndRemove();
+      loading = false;
+      BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count();
+    }
+  });
+
+  auto req = web::WebRequest();
+  m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests", BetterQuests::get()->getServerUrl(), difficulty)));
 }

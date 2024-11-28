@@ -17,6 +17,7 @@ protected:
     CCMenuItemSpriteExtra *m_leftButton;
     CCMenuItemSpriteExtra *m_rightButton;
     CCLabelBMFont *m_titleLabel = nullptr;
+    bool loading = false;
     std::vector<std::string> diffs = std::vector<std::string>{"easy", "medium", "hard", "expert", "extreme", "master"};
 public:
     CCLabelBMFont *m_scrollLabel = nullptr;
@@ -24,4 +25,5 @@ public:
     void loadQuests();
     void onLeft(CCObject *);
     void onRight(CCObject *);
+    void onReload(CCObject *);
 };

@@ -1,4 +1,4 @@
-TODO: Server side migrate to dashauth
+TODO: Add quests server side
 
 # BetterQuests
 

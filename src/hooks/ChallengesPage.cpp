@@ -21,18 +21,19 @@ class $modify(myChP, ChallengesPage) {
             return false;
         }
 
+        auto sprite = CircleButtonSprite::createWithSpriteFrameName("scroll.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::Medium);
         auto myButton = CCMenuItemSpriteExtra::create(
-            CircleButtonSprite::createWithSpriteFrameName("scroll.png"_spr, 1.f, CircleBaseColor::Green, CircleBaseSize::SmallAlt),
+            sprite,
             this,
             menu_selector(myChP::onQuestsPlus)
         );
+        sprite->setScale(0.8);
 
-        auto menu = this->getChildByIDRecursive("top-right-menu");
+        auto menu = this->getChildByIDRecursive("main-menu");
         menu->addChild(myButton);
+        myButton->setPosition({386,-247});
 
         myButton->setID("more-quests"_spr);
-
-        menu->updateLayout();
 
         return true;
     }
