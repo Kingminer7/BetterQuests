@@ -80,8 +80,8 @@ CREATE TABLE
 		LastUpdmedium INTEGER DEFAULT 0,
 		LastUpdhard INTEGER DEFAULT 0,
 		LastUpdexpert INTEGER DEFAULT 0,
-		LastUpdmaster INTEGER DEFAULT 0,
-		LastUpdgrandmaster INTEGER DEFAULT 0
+		LastUpdextreme INTEGER DEFAULT 0,
+		LastUpdmaster INTEGER DEFAULT 0
 	);
 
 INSERT INTO
@@ -128,22 +128,6 @@ VALUES
 		1,
 		'{"id": {{levelid}}}'
 	);
-
-INSERT INTO
-	Levels (
-		Name,
-		QuestName,
-		LevelId,
-		Difficulty
-	)
-VALUES
-	(
-		'Tidal Wave',
-		'Dap Dodum Doo',
-		86407629,
-		'easy'
-	);
-
 INSERT INTO
 	GeneralData (
 		Id
