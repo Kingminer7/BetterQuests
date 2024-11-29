@@ -82,16 +82,20 @@ bool QuestNode::init(QuestPopup *popup, Quest quest, CCSize size) {
   this->addChild(claimMenu);
 
   CCSprite *claimSpr;
+  auto enabled = true;
   if (quest.progress / quest.quantity >= 1) {
     claimSpr = CCSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png");
+  } else if (quest.type == "CompleteLevel") {
+    claimSpr = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
   } else {
-    claimSpr =
-        CCSprite::createWithSpriteFrameName("GJ_playBtn_001.png");
+    claimSpr = CCGrayscaleSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png");
+    enabled = false;
   }
   auto claimBtn = CCMenuItemSpriteExtra::create(
       claimSpr, this, menu_selector(QuestNode::onClaim));
   claimBtn->setScale(0.6f);
   claimBtn->m_baseScale = 0.6f;
+  claimBtn->setEnabled(enabled);
   claimMenu->addChildAtPosition(claimBtn, Anchor::Right, {-20.f, -13.f});
 
   return true;
