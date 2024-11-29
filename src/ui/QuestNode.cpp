@@ -88,7 +88,7 @@ bool QuestNode::init(QuestPopup *popup, Quest quest, CCSize size) {
   } else if (quest.type == "CompleteLevel") {
     claimSpr = CCSprite::createWithSpriteFrameName("GJ_playBtn2_001.png");
   } else {
-    claimSpr = CCGrayscaleSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png");
+    claimSpr = CCSpriteGrayscale::createWithSpriteFrameName("GJ_rewardBtn_001.png");
     enabled = false;
   }
   auto claimBtn = CCMenuItemSpriteExtra::create(
