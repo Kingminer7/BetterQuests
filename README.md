@@ -1,8 +1,10 @@
-TODO: Add quests server side
-
 # BetterQuests
 
-Coming Soon: Leaderboards
+Adds a new quest system to the game. There are different difficulties, and quests reward scrolls. Scrolls are a new stat that're just visual for now.
+
+## Coming Soon
+
+- Leaderboards
 
 # Credits
 

@@ -10,7 +10,7 @@
 	"name": "BetterQuests",
 	"version": "v1.0.0",
 	"developer": "km7dev",
-	"description": "",
+	"description": "Adds a new quest system",
 	"dependencies": [
 		{
 			"id": "geode.node-ids",
