@@ -33,7 +33,7 @@ const module = {
 			seed += hash;
 
 			const rand = mulberry32(seed)
-			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' ORDER BY SIN(${rand(seed)} + id) LIMIT 3;`;
+			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' AND Enabled = 1 ORDER BY SIN(${rand(seed)} + id) LIMIT 3;`;
 
 			const { results } = await env.db.prepare(query).all();
 
