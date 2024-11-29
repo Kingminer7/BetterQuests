@@ -119,7 +119,7 @@ void QuestNode::onClaim(CCObject *Sender) {
     FMODAudioEngine::sharedEngine()->playEffect("gold01.ogg");
     this->exit();
   } else if (quest.type == "CompleteLevel") {
-    auto scene = LevelBrowserLayer::scene(GJSearchObject::create(SearchType::Search, quest.specifications["id"].asString().unwrapOrDefault()));
+    auto scene = LevelBrowserLayer::scene(GJSearchObject::create(SearchType::Search, std::string(quest.specifications["id"].asInt().unwrapOrDefault())));
     CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5, scene));
   }
 }
