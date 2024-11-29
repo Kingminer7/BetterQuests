@@ -86,13 +86,12 @@ bool QuestNode::init(QuestPopup *popup, Quest quest, CCSize size) {
     claimSpr = CCSprite::createWithSpriteFrameName("GJ_rewardBtn_001.png");
   } else {
     claimSpr =
-        CCSpriteGrayscale::createWithSpriteFrameName("GJ_rewardBtn_001.png");
+        CCSprite::createWithSpriteFrameName("GJ_playBtn_001.png");
   }
   auto claimBtn = CCMenuItemSpriteExtra::create(
       claimSpr, this, menu_selector(QuestNode::onClaim));
   claimBtn->setScale(0.6f);
   claimBtn->m_baseScale = 0.6f;
-  claimBtn->setEnabled(quest.progress / quest.quantity >= 1);
   claimMenu->addChildAtPosition(claimBtn, Anchor::Right, {-20.f, -13.f});
 
   return true;
@@ -115,6 +114,9 @@ void QuestNode::onClaim(CCObject *Sender) {
         fmt::format("{} ", BetterQuests::get()->getScrolls()).c_str());
     FMODAudioEngine::sharedEngine()->playEffect("gold01.ogg");
     this->exit();
+  } else if (quest.type == "CompleteLevel") {
+    auto scene = LevelBrowserLayer::scene(GJSearchObject::create(SearchType::Search, std::string(quest.specifications["id"])));
+    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5, scene));
   }
 }
 
