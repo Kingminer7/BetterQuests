@@ -121,7 +121,7 @@ void QuestNode::onClaim(CCObject *Sender) {
     this->exit();
   } else if (quest.type == "CompleteLevel") {
     auto scene = LevelBrowserLayer::scene(GJSearchObject::create(SearchType::Search, fmt::format("{}", quest.specifications["id"].asInt().unwrapOrDefault())));
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5, scene));
+    CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5, scene));
   }
 }
 
