@@ -8,5 +8,6 @@ Adds a new quest system to the game. There are different difficulties, and quest
 
 # Credits
 
+- HicalebiH for the original idea posted in the GD Modding Discord server
 - Justin (hiimjustin000) and Doggo (TheSillyDoggo) for helping me with coin based quests
 - Prevter for helping me get level difficulty properly
