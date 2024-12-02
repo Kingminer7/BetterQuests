@@ -8,7 +8,7 @@
 	},
 	"id": "km7dev.betterquests",
 	"name": "BetterQuests",
-	"version": "v1.0.0-beta.3",
+	"version": "v1.0.0-beta.4",
 	"developer": "km7dev",
 	"description": "Adds a new quest system",
 	"dependencies": [
@@ -18,6 +18,15 @@
 			"version": "1.17.0"
 		}
 	],
+	"links": {
+		"source": "https://github.com/kingminer7/betterquests",
+		"community": "https://discord.gg/Vj5Mcennph",
+		"homepage": "https://km7dev.tech"
+	},
+	"issues": {
+		"info": "Report issues in my Discord server.",
+		"url": "https://discord.gg/Vj5Mcennph"
+	},
 	"resources": {
 		"spritesheets": {
 			"BQ_questSheet01": [
