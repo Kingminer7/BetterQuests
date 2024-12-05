@@ -13,6 +13,16 @@ const module = {
 	name: 'EndUser:GetQuests',
 	execute: async function (req, env, ctx) {
 		if (req.url_.pathname !== '/enduser/getquests') return;
+		if (isNaN(req.url_.searchParams.get('version'))) {
+			return new Response(`{"error": {"code": "4", "reason": "Invalid version."}}`, {
+				headers: { 'Content-Type': 'application/json' },
+			});
+		} else if (req.url_.searchParams.get('version') < 1) {
+			return new Response(`{"error": {"code": "4", "reason": "Outdated version."}}`, {
+				headers: { 'Content-Type': 'application/json' },
+			})
+		}
+
 
 		var day = Math.floor(Math.floor(Date.now() / 1000) / (60 * 60 * 24));
 
