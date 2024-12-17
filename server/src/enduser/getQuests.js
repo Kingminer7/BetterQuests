@@ -4,6 +4,7 @@ const module = {
 	name: 'EndUser:GetQuests',
 	execute: async function (req, env, ctx) {
 		if (req.url_.pathname !== '/enduser/getquests') return;
+    try {
 		if (isNaN(req.url_.searchParams.get('version'))) {
 			return new Response(`{"error": {"code": "4", "reason": "Invalid version."}}`, {
 				headers: { 'Content-Type': 'application/json' },
@@ -109,6 +110,12 @@ const module = {
 		// return new Response(`{"day": ${day - config.startDate}, "quests": ${JSON.stringify(results)}, "next_reset": ${Math.floor(Date.now()/1000 + 86400 - (Date.now() / 1000) % 86400)}}`, {
 		// 	headers: { 'Content-Type': 'application/json' },
 		// });
+    } catch(e) {
+      console.error(e);
+      return new Response(`{"error": {"code": "3", "reason": "Internal Server Error."}}`, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 	},
 };
 
