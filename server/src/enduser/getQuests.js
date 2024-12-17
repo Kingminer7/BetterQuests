@@ -1,14 +1,5 @@
 import config from '../config';
 
-function mulberry32(a) {
-	return function () {
-		var t = (a += 0x6d2b79f5);
-		t = Math.imul(t ^ (t >>> 15), t | 1);
-		t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-	};
-}
-
 const module = {
 	name: 'EndUser:GetQuests',
 	execute: async function (req, env, ctx) {
@@ -41,9 +32,7 @@ const module = {
 				hash |= 0;
 			}
 			seed += hash;
-
-			const rand = mulberry32(seed)
-			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' AND Enabled = 1 ORDER BY SIN(${rand(seed)} + id) LIMIT 3;`;
+			let query = `SELECT * FROM Quests WHERE Difficulty = '${type}' AND Enabled = 1 ORDER BY random() LIMIT 3;`;
 
 			const { results } = await env.db.prepare(query).all();
 
@@ -81,7 +70,7 @@ const module = {
 				let ins = `UPDATE GeneralData SET LastUpd${type} = ${day}, MaximumTrophies = ${i};`;
 				var res = await env.db.prepare(ins).all();
 			}
-			let query2 = `SELECT * FROM Levels WHERE Difficulty = '${type}' ORDER BY SIN(${rand(seed)} + id) LIMIT 3;`;
+			let query2 = `SELECT * FROM Levels WHERE Difficulty = '${type}' ORDER BY random() LIMIT 3;`;
 			const levels = await env.db.prepare(query2).all();
 			for (var i = 0; i < results.length; i++) {
 				if (

@@ -13,9 +13,11 @@ protected:
     std::string difficulty = "easy";
     CCLabelBMFont *m_timerLabel = nullptr;
     void updateTimer(float);
+    bool runTimer = false;
     CCMenu *m_questMenu;
     CCMenuItemSpriteExtra *m_leftButton;
     CCMenuItemSpriteExtra *m_rightButton;
+    CCMenuItemSpriteExtra *m_reloadBtn;
     CCLabelBMFont *m_titleLabel = nullptr;
     bool loading = false;
     std::vector<std::string> diffs = std::vector<std::string>{"easy", "medium", "hard", "expert", "extreme", "master"};

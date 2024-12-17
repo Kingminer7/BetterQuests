@@ -88,18 +88,20 @@ bool QuestPopup::setup() {
   m_titleLabel->setID("title-label");
   m_mainLayer->addChildAtPosition(m_titleLabel, Anchor::Top, {0.f, -15.f});
 
-  auto reloadBtn = CCMenuItemSpriteExtra::create(
+  m_reloadBtn = CCMenuItemSpriteExtra::create(
       CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png"),
       this, menu_selector(QuestPopup::onReload));
-  reloadBtn->setID("reload-button");
-  m_buttonMenu->addChildAtPosition(reloadBtn, Anchor::BottomRight,{-15.f, 15.f});
+  m_reloadBtn->setID("reload-button");
+  m_reloadBtn->setVisible(false);
+  m_buttonMenu->addChildAtPosition(m_reloadBtn, Anchor::BottomRight,{-15.f, 15.f});
 
   this->loadQuests();
-
+  schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
   return true;
 }
 
 void QuestPopup::loadQuests() {
+  runTimer = false;
   if (loading)
     return;
   loading = true;
@@ -139,9 +141,7 @@ void QuestPopup::loadQuests() {
       m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom,
                                       {0.f, 12.5f});
     }
-
     QuestPopup::updateTimer(0);
-    schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
     loadingCircle->fadeAndRemove();
     loading = false;
     return;
@@ -155,6 +155,19 @@ void QuestPopup::loadQuests() {
         BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::system_clock::now().time_since_epoch())
                  .count();
+        m_reloadBtn->setVisible(true);
+        return;
+      }
+      if (res->json().unwrapOrDefault().contains("error")) {
+        auto error = res->json().unwrapOrDefault()["error"];
+        log::error("Error");
+        loadingCircle->fadeAndRemove();
+        loading = false;
+        BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count();
+        FLAlertLayer::create(fmt::format("Error occured, code {}.", error["code"].asDouble().unwrapOrDefault()).c_str(), fmt::format("An error occured while trying to load quests: {}", error["reason"].asString().unwrapOrDefault()).c_str(), "OK")->show();
+        m_reloadBtn->setVisible(true);
         return;
       }
       auto quests = res->json()
@@ -190,8 +203,7 @@ void QuestPopup::loadQuests() {
         m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom,
                                         {0.f, 12.5f});
       }
-      QuestPopup::updateTimer(0);
-      schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
+      runTimer = true;
       loadingCircle->fadeAndRemove();
       loading = false;
       BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
@@ -202,13 +214,14 @@ void QuestPopup::loadQuests() {
 
   auto req = web::WebRequest();
   m_listener.setFilter(
-      req.get(fmt::format("{}/enduser/getquests",
+      req.get(fmt::format("{}/enduser/getquests?version=1",
                           BetterQuests::get()->getServerUrl(), difficulty)));
 }
 
 void QuestPopup::updateTimer(float) {
   if (m_timerLabel == nullptr)
     return;
+  if (!runTimer) return;
   auto now = std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::system_clock::now().time_since_epoch())
                  .count();
@@ -268,6 +281,7 @@ void QuestPopup::onReload(CCObject *) {
   if (now - BetterQuests::get()->lastReload < 20) {
     return;
   }
+  m_reloadBtn->setVisible(false);
   m_questMenu->removeAllChildren();
   auto loadingCircle = LoadingCircle::create();
   loadingCircle->setID("loading-circle");
@@ -321,7 +335,6 @@ void QuestPopup::onReload(CCObject *) {
         m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom, {0.f, 12.5f});
       }
       QuestPopup::updateTimer(0);
-      schedule(schedule_selector(QuestPopup::updateTimer), 1.f);
       loadingCircle->fadeAndRemove();
       loading = false;
       BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(
@@ -331,5 +344,5 @@ void QuestPopup::onReload(CCObject *) {
   });
 
   auto req = web::WebRequest();
-  m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests", BetterQuests::get()->getServerUrl(), difficulty)));
+  m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests?version=1", BetterQuests::get()->getServerUrl(), difficulty)));
 }
