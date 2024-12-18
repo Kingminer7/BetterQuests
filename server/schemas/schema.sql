@@ -13,7 +13,8 @@ CREATE TABLE
 		Difficulty TEXT DEFAULT 'None',
 		Type TEXT DEFAULT 'None',
 		Quantity INTEGER DEFAULT 0,
-		Specifications JSON DEFAULT '{}'
+		Specifications JSON DEFAULT '{}',
+		Enabled INTEGER DEFAULT 1
 	);
 
 CREATE TABLE
