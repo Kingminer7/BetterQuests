@@ -1,5 +1,5 @@
 # 1.0.0-beta.5
-- Change how quests work server side
+- Change how quests work server side (Should fix randomization)
 - Add error popups
 # 1.0.0-beta.4
 - Add links and stuff i forgot before
