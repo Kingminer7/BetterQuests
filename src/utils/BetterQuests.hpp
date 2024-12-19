@@ -21,8 +21,8 @@ class BetterQuests {
 private:
   static BetterQuests *instance;
   std::string serverUrl =
-      "http://localhost:8787";
-      // "https://bq.km7dev.tech";
+      // "http://localhost:8787";
+      "https://bq.km7dev.tech";
   // std::string authUrl = "http://localhost:3000/api/v1";
   BetterQuests() { scrolls = Mod::get()->getSavedValue<int>("scrolls"); };
   int scrolls = 0;
