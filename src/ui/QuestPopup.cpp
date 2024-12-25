@@ -141,6 +141,7 @@ void QuestPopup::loadQuests() {
       m_mainLayer->addChildAtPosition(m_timerLabel, Anchor::Bottom,
                                       {0.f, 12.5f});
     }
+    runTimer = true;
     QuestPopup::updateTimer(0);
     loadingCircle->fadeAndRemove();
     loading = false;
@@ -204,6 +205,7 @@ void QuestPopup::loadQuests() {
                                         {0.f, 12.5f});
       }
       runTimer = true;
+      QuestPopup::updateTimer(0);
       loadingCircle->fadeAndRemove();
       loading = false;
       BetterQuests::get()->lastReload = std::chrono::duration_cast<std::chrono::seconds>(

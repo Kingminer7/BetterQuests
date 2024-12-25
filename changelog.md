@@ -1,3 +1,5 @@
+# 1.0.0-beta.6
+- Fix the timer
 # 1.0.0-beta.4/5
 - Change how quests work server side (Should fix randomization)
 - Add error popups
