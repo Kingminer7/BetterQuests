@@ -1,5 +1,5 @@
 {
-	"geode": "4.1.1",
+	"geode": "4.2.0",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
@@ -8,16 +8,12 @@
 	},
 	"id": "km7dev.betterquests",
 	"name": "BetterQuests",
-	"version": "v1.0.0-beta.6",
+	"version": "v1.0.0-beta.7",
 	"developer": "km7dev",
 	"description": "Adds a new quest system",
-	"dependencies": [
-		{
-			"id": "geode.node-ids",
-			"importance": "required",
-			"version": "1.17.0"
-		}
-	],
+	"dependencies": {
+		"geode.node-ids": "1.19.0"
+	},
 	"links": {
 		"source": "https://github.com/kingminer7/betterquests",
 		"community": "https://discord.gg/Vj5Mcennph",

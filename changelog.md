@@ -1,3 +1,5 @@
+# 1.0.0-beta.7
+- Fix *some* quests showing and being unclaimable.
 # 1.0.0-beta.6
 - Fix the timer
 # 1.0.0-beta.4/5
