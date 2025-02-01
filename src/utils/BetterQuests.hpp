@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Geode/loader/Mod.hpp"
+#include "Geode/utils/web.hpp"
 using namespace geode::prelude;
 
 struct Quest {
@@ -26,11 +27,13 @@ private:
   // std::string authUrl = "http://localhost:3000/api/v1";
   BetterQuests() { scrolls = Mod::get()->getSavedValue<int>("scrolls"); };
   int scrolls = 0;
+
 public:
   static BetterQuests *get();
   std::string getServerUrl();
   // std::string getAuthUrl();
   std::vector<Quest> quests;
+  EventListener<web::WebTask> listener;
   std::vector<int> completedQuests;
   int lastReload = 0;
   int resetsAt = 0;
@@ -42,7 +45,8 @@ public:
     scrolls += quest.reward;
     Mod::get()->setSavedValue<int>("scrolls", scrolls);
     completedQuests.push_back(quest.id);
-    Mod ::get()->setSavedValue<std::vector<int>>("completedQuests", completedQuests);
+    Mod ::get()->setSavedValue<std::vector<int>>("completedQuests",
+                                                 completedQuests);
   }
 };
 
@@ -63,15 +67,16 @@ template <> struct matjson::Serialize<Quest> {
   }
 
   static matjson::Value toJson(Quest const &value) {
-    auto obj = matjson::makeObject({{"Id", value.id},
-                                    {"Name", value.name},
-                                    {"Description", value.description},
-                                    {"Reward", value.reward},
-                                    {"Difficulty", value.difficulty},
-                                    {"Type", value.type},
-                                    {"Quantity", value.quantity},
-                                    {"Specifications", value.specifications.dump()},
-                                    {"Progress", value.progress}});
+    auto obj =
+        matjson::makeObject({{"Id", value.id},
+                             {"Name", value.name},
+                             {"Description", value.description},
+                             {"Reward", value.reward},
+                             {"Difficulty", value.difficulty},
+                             {"Type", value.type},
+                             {"Quantity", value.quantity},
+                             {"Specifications", value.specifications.dump()},
+                             {"Progress", value.progress}});
     return obj;
   }
 };

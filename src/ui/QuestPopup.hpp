@@ -9,7 +9,6 @@ using namespace geode::prelude;
 class QuestPopup : public geode::Popup<> {
 protected:
     bool setup() override;
-    EventListener<web::WebTask> m_listener;
     std::string difficulty = "easy";
     CCLabelBMFont *m_timerLabel = nullptr;
     void updateTimer(float);

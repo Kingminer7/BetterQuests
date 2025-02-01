@@ -148,7 +148,7 @@ void QuestPopup::loadQuests() {
     return;
   }
 
-  m_listener.bind([this, loadingCircle](web::WebTask::Event *e) {
+  BetterQuests::get()->listener.bind([this, loadingCircle](web::WebTask::Event *e) {
     if (web::WebResponse *res = e->getValue()) {
       if (!res->ok()) {
         loadingCircle->fadeAndRemove();
@@ -215,7 +215,7 @@ void QuestPopup::loadQuests() {
   });
 
   auto req = web::WebRequest();
-  m_listener.setFilter(
+  BetterQuests::get()->listener.setFilter(
       req.get(fmt::format("{}/enduser/getquests?version=1",
                           BetterQuests::get()->getServerUrl(), difficulty)));
 }
@@ -292,7 +292,7 @@ void QuestPopup::onReload(CCObject *) {
   loadingCircle->show();
   loadingCircle->setPosition((m_mainLayer->getContentSize() - loadingCircle->getContentSize()) / 2);
   loading = true;
-  m_listener.bind([this, loadingCircle](web::WebTask::Event *e) {
+  BetterQuests::get()->listener.bind([this, loadingCircle](web::WebTask::Event *e) {
     if (web::WebResponse *res = e->getValue()) {
       if (!res->ok()) {
         loadingCircle->fadeAndRemove();
@@ -346,7 +346,7 @@ void QuestPopup::onReload(CCObject *) {
   });
 
   auto req = web::WebRequest();
-  m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests?version=1", BetterQuests::get()->getServerUrl(), difficulty)));
+  BetterQuests::get()->listener.setFilter(req.get(fmt::format("{}/enduser/getquests?version=1", BetterQuests::get()->getServerUrl(), difficulty)));
 }
 
 $on_mod(Loaded) {
