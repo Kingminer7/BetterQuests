@@ -27,6 +27,10 @@ void BetterQuests::addScrolls(int amount) {
 }
 
 $on_mod(Loaded) {
+  BetterQuests::get()->quests = Mod::get()->getSavedValue<std::vector<Quest>>("quests");
+  BetterQuests::get()->resetsAt = Mod::get()->getSavedValue<int>("resetsAt");
+  BetterQuests::get()->completedQuests = Mod::get()->getSavedValue<std::vector<int>>("completedQuests");
+
   auto now = std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::system_clock::now().time_since_epoch())
                  .count();
@@ -74,6 +78,7 @@ $on_mod(Loaded) {
                                           .unwrapOrDefault();
       Mod::get()->setSavedValue<int>("resetsAt", BetterQuests::get()->resetsAt);
       Mod::get()->setSavedValue<std::vector<Quest>>("quests", quests);
+      Mod::get()->setSavedValue<std::vector<int>>("completedQuests", BetterQuests::get()->completedQuests);
 
       BetterQuests::get()->lastReload =
           std::chrono::duration_cast<std::chrono::seconds>(

@@ -183,6 +183,7 @@ void QuestPopup::loadQuests() {
                                           .unwrapOrDefault();
       Mod::get()->setSavedValue<int>("resetsAt", BetterQuests::get()->resetsAt);
       Mod::get()->setSavedValue<std::vector<Quest>>("quests", quests);
+      Mod::get()->setSavedValue<std::vector<int>>("completedQuests", BetterQuests::get()->completedQuests);
 
       int id = 0;
       for (auto quest : BetterQuests::get()->quests) {
@@ -347,10 +348,4 @@ void QuestPopup::onReload(CCObject *) {
 
   auto req = web::WebRequest();
   BetterQuests::get()->listener.setFilter(req.get(fmt::format("{}/enduser/getquests?version=1", BetterQuests::get()->getServerUrl(), difficulty)));
-}
-
-$on_mod(Loaded) {
-  BetterQuests::get()->quests = Mod::get()->getSavedValue<std::vector<Quest>>("quests");
-  BetterQuests::get()->resetsAt = Mod::get()->getSavedValue<int>("resetsAt");
-  BetterQuests::get()->completedQuests = Mod::get()->getSavedValue<std::vector<int>>("completedQuests");
 }
