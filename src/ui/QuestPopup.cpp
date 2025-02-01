@@ -304,8 +304,6 @@ void QuestPopup::onReload(CCObject *) {
       }
       auto quests = res->json().unwrapOrDefault()["quests"].as<std::vector<Quest>>().unwrapOrDefault();
       if (BetterQuests::get()->resetsAt < res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault()) {
-        BetterQuests::get()->completedQuests = std::vector<int>();
-        Mod::get()->setSavedValue<std::vector<int>>("completedQuests", BetterQuests::get()->completedQuests);
       } else {
         for (Quest &quest : quests) {
           auto it = std::find_if(BetterQuests::get()->quests.begin(), BetterQuests::get()->quests.end(), [&quest](Quest q) { return q.id == quest.id; });
@@ -315,9 +313,11 @@ void QuestPopup::onReload(CCObject *) {
         }
       }
       BetterQuests::get()->quests = quests;
+      BetterQuests::get()->completedQuests = std::vector<int>();
       BetterQuests::get()->resetsAt = res->json().unwrapOrDefault()["next_reset"].as<int>().unwrapOrDefault();
       Mod::get()->setSavedValue<int>("resetsAt", BetterQuests::get()->resetsAt);
       Mod::get()->setSavedValue<std::vector<Quest>>("quests", quests);
+      Mod::get()->setSavedValue<std::vector<int>>("completedQuests", BetterQuests::get()->completedQuests);
 
       int id = 0;
       for (auto quest : BetterQuests::get()->quests) {
@@ -347,4 +347,10 @@ void QuestPopup::onReload(CCObject *) {
 
   auto req = web::WebRequest();
   m_listener.setFilter(req.get(fmt::format("{}/enduser/getquests?version=1", BetterQuests::get()->getServerUrl(), difficulty)));
+}
+
+$on_mod(Loaded) {
+  BetterQuests::get()->quests = Mod::get()->getSavedValue<std::vector<Quest>>("quests");
+  BetterQuests::get()->resetsAt = Mod::get()->getSavedValue<int>("resetsAt");
+  BetterQuests::get()->completedQuests = Mod::get()->getSavedValue<std::vector<int>>("completedQuests");
 }

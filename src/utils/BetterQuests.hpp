@@ -75,9 +75,3 @@ template <> struct matjson::Serialize<Quest> {
     return obj;
   }
 };
-
-$on_mod(Loaded) {
-  BetterQuests::get()->quests = Mod::get()->getSavedValue<std::vector<Quest>>("quests");
-  BetterQuests::get()->resetsAt = Mod::get()->getSavedValue<int>("resetsAt");
-  BetterQuests::get()->completedQuests = Mod::get()->getSavedValue<std::vector<int>>("completedQuests");
-}

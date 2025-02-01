@@ -3,6 +3,7 @@ using namespace geode::prelude;
 #include "../apis/eclipse.hpp"
 #include "../ui/NotifNode.hpp"
 #include "../utils/BetterQuests.hpp"
+#include <Geode/modify/GJBaseGameLayer.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 
 // Thank you prevter
@@ -93,29 +94,17 @@ std::string diffToStr(LevelDifficulty diff) {
   }
 }
 
-class $modify(BQPL, PlayLayer) {
+class $modify(BQBGL, GJBaseGameLayer) {
   struct Fields {
-    std::vector<EffectGameObject *> coins;
+    int coins = 0;
   };
-
-  void addObject(GameObject *p0) {
-    PlayLayer::addObject(p0);
-    if (p0->m_objectType == GameObjectType::UserCoin ||
-        p0->m_objectType == GameObjectType::SecretCoin) // 142
-    {
-      m_fields->coins.push_back(as<EffectGameObject *>(p0));
-    }
+  void pickupItem(EffectGameObject *obj) {
+    GJBaseGameLayer::pickupItem(obj);
+    if (obj->m_objectID == 1329 || obj->m_objectID == 142) m_fields->coins++;
   }
+};
 
-  int getCollectedCoins() {
-    int k = 0;
-    for (auto coin : m_fields->coins) {
-      if (coin->getOpacity() == 0)
-        k++;
-    }
-    return k;
-  }
-
+class $modify(BQPL, PlayLayer) {
   std::vector<std::string> checkStandards(Quest quest) {
     std::vector<std::string> invalidities = {};
     if (m_level->m_stars <= 0)
@@ -157,18 +146,19 @@ class $modify(BQPL, PlayLayer) {
         }
       }
 
-      // Thanks Doggo and Justin
+      // Thanks Doggo and Jasmine for orig code, no longer used.
       if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
-        int coinsNeeded =
-            quest.specifications["coins"].asInt().unwrapOrDefault();
-        if (coinsNeeded > m_fields->coins.size()) {
-          coinsNeeded = m_fields->coins.size();
-        }
-        if (getCollectedCoins() < coinsNeeded) {
-          invalidities.push_back("coins");
-        }
-        if (coinsNeeded == 0) {
-          invalidities.push_back("coins");
+        if (BQBGL *bgl = reinterpret_cast<BQBGL *>(this)) {
+          auto coins = bgl->m_fields->coins;
+          int coinsNeeded = quest.specifications["coins"].asInt().unwrapOrDefault();
+          if (coins < coinsNeeded) {
+            invalidities.push_back("coins");
+          }
+          if (coinsNeeded == 0) {
+            invalidities.push_back("coins");
+          }
+        } else {
+          log::error("Somehow cast isnt working!");
         }
       }
     } else if (quest.type == "CompleteLevel") {
@@ -195,16 +185,17 @@ class $modify(BQPL, PlayLayer) {
 
       // Thanks Doggo and Justin
       if (quest.specifications["coins"].asInt().unwrapOrDefault() != 0) {
-        int coinsNeeded =
-            quest.specifications["coins"].asInt().unwrapOrDefault();
-        if (coinsNeeded > m_fields->coins.size()) {
-          coinsNeeded = m_fields->coins.size();
-        }
-        if (getCollectedCoins() < coinsNeeded) {
-          invalidities.push_back("coins");
-        }
-        if (coinsNeeded == 0) {
-          invalidities.push_back("coins");
+        if (BQBGL *bgl = reinterpret_cast<BQBGL *>(this)) {
+          auto coins = bgl->m_fields->coins;
+          int coinsNeeded = quest.specifications["coins"].asInt().unwrapOrDefault();
+          if (coins < coinsNeeded) {
+            invalidities.push_back("coins");
+          }
+          if (coinsNeeded == 0) {
+            invalidities.push_back("coins");
+          }
+        } else {
+          log::error("Somehow cast isnt working!");
         }
       }
     } else {
