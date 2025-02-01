@@ -1,5 +1,6 @@
 # 1.0.0
 - Probably fix the quests not properly resetting sometimes
+- Load on startup
 - Optimize coin code
 # 1.0.0-beta.7
 - Fix *some* quests showing and being unclaimable.
