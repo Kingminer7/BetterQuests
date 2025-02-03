@@ -39,7 +39,6 @@ $on_mod(Loaded) {
     return;
   }
   BetterQuests::get()->listener.bind([](web::WebTask::Event *e) {
-    log::info("balls");
     if (web::WebResponse *res = e->getValue()) {
       if (!res->ok()) {
         BetterQuests::get()->lastReload =
