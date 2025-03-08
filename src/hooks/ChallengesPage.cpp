@@ -40,5 +40,17 @@ class $modify(myChP, ChallengesPage) {
 
     void onQuestsPlus(CCObject*) {
         QuestPopup::create()->show();
+        if (Mod::get()->getSavedValue<bool>("deprecation-notice"), true) {
+            geode::createQuickPopup(
+                "BetterQuests",            // title
+                "BetterQuests will no longer be recieving major updates. See the mod's about page for more info.",   // content
+                "Ok", "Don't show again",      // buttons
+                [](auto, bool btn2) {
+                    if (btn2) {
+                        Mod::get()->setSavedValue<bool>("deprecation-notice", false);
+                    }
+                }
+            );
+        }
     }
 };
