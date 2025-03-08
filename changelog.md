@@ -1,3 +1,5 @@
+# 1.0.2
+- Officially stop major updates - see mod about page for more info.
 # 1.0.0
 - Probably fix the quests not properly resetting sometimes
 - Load on startup
