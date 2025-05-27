@@ -1,16 +1,15 @@
 {
-	"geode": "4.2.0",
+	"geode": "4.5.0",
 	"gd": {
 		"win": "2.2074",
 		"android": "2.2074",
-		"mac": "2.2074",
-		"ios": "2.2074"
+		"mac": "2.2074"
 	},
 	"id": "km7dev.betterquests",
 	"name": "BetterQuests",
-	"version": "v1.0.2",
+	"version": "v1.0.3",
 	"developer": "km7dev",
-	"description": "Adds a new quest system",
+	"description": "Used to add new quest system",
 	"dependencies": {
 		"geode.node-ids": "1.19.0"
 	},

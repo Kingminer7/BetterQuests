@@ -2,18 +2,6 @@
 
 using namespace geode::prelude;
 
-struct GetServerEvent : geode::Event {
-    GetServerEvent() {}
-
-    std::string m_url = "";
-};
-
-std::string getServer() {
-    auto event = GetServerEvent();
-    event.post();
-    return event.m_url;
-}
-
 #include <Geode/modify/ChallengesPage.hpp>
 class $modify(myChP, ChallengesPage) {
     bool init() {
@@ -39,18 +27,6 @@ class $modify(myChP, ChallengesPage) {
     }
 
     void onQuestsPlus(CCObject*) {
-        QuestPopup::create()->show();
-        if (!Mod::get()->getSavedValue<bool>("deprecation-notice", false)) {
-            geode::createQuickPopup(
-                "BetterQuests",            // title
-                "BetterQuests will no longer be recieving major updates. See the mod's about page for more info.",   // content
-                "Ok", "Don't show again",      // buttons
-                [](auto, bool btn2) {
-                    if (btn2) {
-                        Mod::get()->setSavedValue<bool>("deprecation-notice", true);
-                    }
-                }
-            );
-        }
+        FLAlertLayer::create("BetterQuests", "BetterQuests is no longer in support and no longer functions. You can just uninstall the mod.", "Ok")->show();
     }
 };
