@@ -1,5 +1,3 @@
-#include "../ui/QuestPopup.hpp"
-
 using namespace geode::prelude;
 
 #include <Geode/modify/ChallengesPage.hpp>

@@ -69,36 +69,6 @@ jobs:
           name: build-output
           path: ${{ steps.build.outputs.build-output }}
 
-  nightly: 
-    name: Create Nightly Release
-    runs-on: ubuntu-latest
-    if: github.event.inputs.build_type != 'release'
-    needs: ['package']
-    permissions:
-      contents:
-        write
-        
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: './artifacts/'
-
-      #- run: |
-      #    7z x ./artifacts/build-output.zip
-
-      - name: Create Nightly Release
-        uses: andelf/nightly-release@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: nightly
-          name: 'Development Release'
-          body: |
-            Development release for commit ${{ github.sha }}. Built in RelWithDebInfo.
-          files: |
-            ./artifacts/build-output/*.geode
-            ./artifacts/build-output/*.pdb
-
   release:
     name: Create Draft Release
     runs-on: ubuntu-latest
